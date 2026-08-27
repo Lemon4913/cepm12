@@ -2,6 +2,6 @@
 export const siteConfig = {
   nameTh: "ตลาดท่านา",
   nameEn: "Talat Tha Na Map",
-  githubUrl: "https://github.com/your-org/cepm12",
+  githubUrl: "https://github.com/Lemon4913/cepm12",
   school: "โรงเรียนมหิดลวิทยานุสรณ์",
 };
