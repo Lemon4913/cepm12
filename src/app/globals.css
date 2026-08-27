@@ -49,24 +49,24 @@
 }
 
 :root {
-  /* Talat Tha Na brand palette: deep teal + deep red, warm cream/tan neutrals, pale cyan accent */
-  --background: #fdfbf9;
-  --foreground: #211e1b;
+  /* Talat Tha Na brand palette: deep teal + deep red, pale teal wash, warm tan for secondary surfaces */
+  --background: #eff8f7;
+  --foreground: #16302d;
   --card: #ffffff;
-  --card-foreground: #211e1b;
+  --card-foreground: #16302d;
   --popover: #ffffff;
-  --popover-foreground: #211e1b;
+  --popover-foreground: #16302d;
   --primary: #0e8983;
   --primary-foreground: #ffffff;
-  --secondary: #eae0d8;
-  --secondary-foreground: #3a322c;
-  --muted: #f1e9e2;
-  --muted-foreground: #7a6a5c;
+  --secondary: #f3e6da;
+  --secondary-foreground: #4a3b2d;
+  --muted: #f1e6da;
+  --muted-foreground: #8a7660;
   --accent: #d2f1f1;
   --accent-foreground: #0e6b66;
   --destructive: #a82328;
-  --border: #e6dcd2;
-  --input: #e6dcd2;
+  --border: #d9ece9;
+  --input: #d9ece9;
   --ring: #0e8983;
   --chart-1: #0e8983;
   --chart-2: #a82328;
@@ -74,13 +74,13 @@
   --chart-4: #6ec0bb;
   --chart-5: #cc5256;
   --radius: 0.625rem;
-  --sidebar: #f6f1ec;
-  --sidebar-foreground: #211e1b;
+  --sidebar: #e4f3f1;
+  --sidebar-foreground: #16302d;
   --sidebar-primary: #0e8983;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #d2f1f1;
   --sidebar-accent-foreground: #0e6b66;
-  --sidebar-border: #e6dcd2;
+  --sidebar-border: #d9ece9;
   --sidebar-ring: #0e8983;
 }
 

@@ -1,10 +1,13 @@
 import Link from "next/link";
-import { ExternalLink, ShieldUser, ChevronRight } from "lucide-react";
+import { ExternalLink, ShieldUser, ChevronRight, UserCircle, LogIn, UserPlus, Store } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteConfig } from "@/lib/site-config";
+import { getCurrentUser } from "@/lib/auth/dal";
 
-export default function OthersPage() {
+export default async function OthersPage() {
+  const user = await getCurrentUser();
+
   return (
     <>
       <PageHeader title="อื่นๆ" subtitle="เกี่ยวกับโครงการและลิงก์ที่เกี่ยวข้อง" />
@@ -26,6 +29,67 @@ export default function OthersPage() {
 
         <Card className="p-0">
           <CardContent className="divide-y p-0">
+            {user ? (
+              <Link
+                href="/account"
+                className="flex items-center gap-3 p-4 transition-colors hover:bg-accent"
+              >
+                <UserCircle className="size-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">บัญชีของฉัน</p>
+                  <p className="text-xs text-muted-foreground">{user.name} · {user.email}</p>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="flex items-center gap-3 p-4 transition-colors hover:bg-accent"
+                >
+                  <LogIn className="size-5 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">เข้าสู่ระบบ</p>
+                    <p className="text-xs text-muted-foreground">สำหรับผู้ดูแลระบบ ร้านค้า และนักท่องเที่ยว</p>
+                  </div>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </Link>
+                <Link
+                  href="/signup"
+                  className="flex items-center gap-3 p-4 transition-colors hover:bg-accent"
+                >
+                  <UserPlus className="size-5 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">สมัครสมาชิก</p>
+                    <p className="text-xs text-muted-foreground">บันทึกความคืบหน้าและรับข่าวสาร</p>
+                  </div>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </Link>
+              </>
+            )}
+
+            {user?.role === "store" ? (
+              <Link href="/store" className="flex items-center gap-3 p-4 transition-colors hover:bg-accent">
+                <Store className="size-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">หน้าร้านค้า</p>
+                  <p className="text-xs text-muted-foreground">{user.storeName}</p>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+            ) : null}
+
+            {user?.role === "admin" ? (
+              <Link href="/admin" className="flex items-center gap-3 p-4 transition-colors hover:bg-accent">
+                <ShieldUser className="size-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">สำหรับผู้ดูแลระบบ</p>
+                  <p className="text-xs text-muted-foreground">จัดการจุดเช็คอินและข้อมูล QR Code</p>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+            ) : null}
+
             <a
               href={siteConfig.githubUrl}
               target="_blank"
@@ -39,18 +103,6 @@ export default function OthersPage() {
               </div>
               <ChevronRight className="size-4 text-muted-foreground" />
             </a>
-
-            <Link
-              href="/admin"
-              className="flex items-center gap-3 p-4 transition-colors hover:bg-accent"
-            >
-              <ShieldUser className="size-5 text-muted-foreground" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">สำหรับผู้ดูแลระบบ</p>
-                <p className="text-xs text-muted-foreground">จัดการจุดเช็คอินและข้อมูล QR Code</p>
-              </div>
-              <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
           </CardContent>
         </Card>
       </main>
