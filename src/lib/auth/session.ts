@@ -10,26 +10,35 @@ const PENDING_COOKIE = "cepm12_pending";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const PENDING_TTL_S = 10 * 60; // 10 minutes
 
-const secretKey = process.env.SESSION_SECRET;
-if (!secretKey) {
-  throw new Error("SESSION_SECRET environment variable is not set.");
-}
-const encodedKey = new TextEncoder().encode(secretKey);
-
 type PendingStage = "setup" | "verify";
+
+// Computed lazily (not at module load) so importing this file — e.g. transitively, from
+// any page that checks "is someone logged in?" — doesn't crash Next's build-time page
+// data collection just because SESSION_SECRET isn't set in that environment yet. The
+// error still surfaces immediately on the first real request that needs a session.
+let cachedKey: Uint8Array | null = null;
+function getEncodedKey() {
+  if (cachedKey) return cachedKey;
+  const secretKey = process.env.SESSION_SECRET;
+  if (!secretKey) {
+    throw new Error("SESSION_SECRET environment variable is not set.");
+  }
+  cachedKey = new TextEncoder().encode(secretKey);
+  return cachedKey;
+}
 
 async function sign(payload: Record<string, unknown>, expiresIn: string) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiresIn)
-    .sign(encodedKey);
+    .sign(getEncodedKey());
 }
 
 async function verify(token: string | undefined) {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, encodedKey, { algorithms: ["HS256"] });
+    const { payload } = await jwtVerify(token, getEncodedKey(), { algorithms: ["HS256"] });
     return payload;
   } catch {
     return null;
