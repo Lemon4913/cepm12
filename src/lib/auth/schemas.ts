@@ -23,9 +23,9 @@ export const LoginSchema = z.object({
   password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
 });
 
-export const TotpSchema = z.object({
-  token: z
+export const OtpSchema = z.object({
+  code: z
     .string()
     .trim()
-    .regex(/^\d{6}$/, "กรุณากรอกรหัส 6 หลักจากแอปยืนยันตัวตน"),
+    .regex(/^\d{6}$/, "กรุณากรอกรหัส 6 หลักที่ได้รับทางอีเมล"),
 });

@@ -33,7 +33,7 @@ export default async function AccountPage() {
               {user.storeName ? <Badge variant="secondary">{user.storeName}</Badge> : null}
               <Badge variant="outline" className="gap-1">
                 <ShieldCheck className="size-3.5" />
-                เปิดใช้ 2FA แล้ว
+                ยืนยันตัวตนด้วยอีเมล
               </Badge>
             </div>
 

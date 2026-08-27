@@ -37,8 +37,7 @@ await db.insert(users).values({
   name,
   role: "admin",
   newsOptIn: false,
-  totpEnabled: false,
 });
 
 console.log(`Created admin account for ${email}.`);
-console.log("Log in with that email/password — you'll be prompted to set up 2FA on first login.");
+console.log("Log in with that email/password — a 6-digit code will be emailed to you to finish logging in.");

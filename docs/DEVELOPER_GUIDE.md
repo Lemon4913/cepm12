@@ -15,9 +15,9 @@ setup steps, see the root [`README.md`](../README.md).
 | Styling | Tailwind CSS v4 | Tokens in `src/app/globals.css` (`:root` / `.dark`), see [Theming](#theming). |
 | Font | IBM Plex Sans Thai via `next/font/google` | Loaded in `src/app/layout.tsx`. |
 | Database | SQLite via [Drizzle ORM](https://orm.drizzle.team) + `@libsql/client` | Schema: `src/db/schema.ts`. See [Database](#database). |
-| Auth | Hand-rolled: `bcryptjs` + `jose` (JWT session cookies) + `otplib` (TOTP 2FA) | `src/lib/auth/`. No third-party auth provider. |
+| Auth | Hand-rolled: `bcryptjs` + `jose` (JWT session cookies) + `resend` (emailed OTP 2FA) | `src/lib/auth/`. |
 | Validation | Zod v4 | `src/lib/auth/schemas.ts` |
-| QR | `qr-scanner` (camera decode), `qrcode` (generate, used for TOTP setup + admin's printable checkpoint QR codes) | |
+| QR | `qr-scanner` (camera decode), `qrcode` (generate, used for admin's printable checkpoint QR codes) | |
 | Toasts | `sonner` (via shadcn) | |
 
 ## Project structure
@@ -32,28 +32,28 @@ src/
     account/page.tsx        Logged-in user's profile + news opt-in + progress (role-gated)
     admin/page.tsx           Admin dashboard (role-gated: "admin")
     store/page.tsx           Store owner dashboard (role-gated: "store" | "admin") — placeholder
-    login/, signup/, setup-2fa/, verify-2fa/    Auth pages
+    login/, signup/, verify-2fa/    Auth pages
     actions/
-      auth.ts                Server actions: signup, login, TOTP setup/verify, logout, news opt-in
+      auth.ts                Server actions: signup, login, OTP verify/resend, logout, news opt-in
       progress.ts             Server actions: read/write a signed-in user's checkpoint progress
     layout.tsx               Root layout: font, theme provider, bottom nav, toaster
     globals.css               Design tokens (see Theming)
   components/
     ui/                     shadcn primitives (button, card, dialog, input, ...)
-    auth/                   signup/login/TOTP forms, logout button
+    auth/                   signup/login/OTP forms, logout button
     admin/                  admin dashboard client component
     account/                news opt-in toggle
     bottom-nav.tsx            The 4-tab bottom bar
     checkpoint-list.tsx        Scanned/unscanned checkpoint list (used on Home, Scan, Account)
     progress-summary-card.tsx   "X / 6 scanned" card
     qr-code-scanner.tsx         Camera-based QR decode (dynamic-imported, client-only)
-    qr-code-preview.tsx         Renders a QR code image from a string (admin + TOTP setup)
+    qr-code-preview.tsx         Renders a QR code image from a string (admin's printable checkpoint codes)
   hooks/
     use-checkpoint-progress.ts  Single source of truth for scan progress — see below
   lib/
     checkpoints.ts             Static checkpoint data (id, name, description, QR value)
     site-config.ts              Editable site-wide config (GitHub URL, etc.)
-    auth/                      password.ts, totp.ts, session.ts, dal.ts, schemas.ts
+    auth/                      password.ts, otp.ts, email.ts, session.ts, dal.ts, schemas.ts
   db/
     schema.ts                   Drizzle table definitions (users, sessions, checkpoint_progress)
     index.ts                    DB client singleton
@@ -69,7 +69,7 @@ drizzle.config.ts               drizzle-kit config (schema path, sqlite dialect)
 2. **Checkpoint check-in system** — static list in `src/lib/checkpoints.ts`; scanning a checkpoint's
    QR code (value format `cepm12:checkpoint:<id>`) marks it scanned via
    `src/hooks/use-checkpoint-progress.ts`.
-3. **Accounts + mandatory TOTP 2FA** for three roles (`admin`, `store`, `user`). See
+3. **Accounts + mandatory email-OTP 2FA** for three roles (`admin`, `store`, `user`). See
    [Auth flow](#auth-flow) below.
 4. **Server-synced progress** — signed-in users' scans are stored in the `checkpoint_progress` table
    instead of (or in addition to, on first login) `localStorage`.
@@ -86,27 +86,35 @@ drizzle.config.ts               drizzle-kit config (schema path, sqlite dialect)
   [Adding a feature: store profile editing](#adding-a-feature-store-profile-editing) below for where
   to start.
 - **News opt-in is capture-only** — the checkbox is stored on the user record
-  (`users.newsOptIn`), but nothing sends actual emails. Wiring that up needs an email provider
-  (Resend, SMTP, etc.) — a deliberate choice was made *not* to add one yet (see
-  [Auth flow](#auth-flow)).
+  (`users.newsOptIn`), but nothing sends an actual newsletter. The OTP emails piggyback on the same
+  Resend setup, but no marketing/news-sending code exists yet.
 - **No admin UI to promote a user to admin** — only `bun run db:seed` creates an admin account.
+- **No rate limiting on login attempts** (only on OTP *resend*, see below) — worth adding if this
+  ever sees real traffic.
 
 ## Auth flow
 
 Everything lives under `src/lib/auth/` and `src/app/actions/auth.ts`. No third-party auth
-provider — this was a deliberate choice (see the original conversation) to avoid requiring
-external service accounts/API keys for a student-run, self-hosted project.
+provider — a deliberate choice to avoid an external identity service, though sending the OTP email
+does depend on [Resend](https://resend.com) (see below).
 
 - **Passwords**: `bcryptjs`, 12 salt rounds (`src/lib/auth/password.ts`).
-- **2FA**: TOTP only (Google Authenticator / Authy / etc.), via `otplib@12`'s `authenticator`
-  singleton (`src/lib/auth/totp.ts`). **2FA is mandatory** for every role — there is no way to skip
-  it. Chosen over email/SMS OTP because it needs zero external services or ongoing cost.
+- **2FA**: a 6-digit code emailed via Resend (`src/lib/auth/email.ts`, `src/lib/auth/otp.ts`).
+  **2FA is mandatory** for every role — there is no way to skip it. This replaced an earlier
+  TOTP/authenticator-app design; TOTP was dropped because scanning a QR code is awkward when
+  signing up from a desktop browser. The code is generated with `crypto.randomInt` (not `Math.random`),
+  stored as an HMAC (keyed with `SESSION_SECRET`, not a plain hash) on `users.otpCodeHash` /
+  `users.otpExpiresAt`, and expires after 10 minutes. `resendOtp()` enforces a 30-second cooldown
+  between sends.
+  - **Local dev without a Resend key**: `sendOtpEmail()` falls back to `console.log`-ing the code
+    instead of sending, so you can test the whole flow without any credentials. Never rely on this
+    in production — set `RESEND_API_KEY` there.
 - **Sessions**: database-backed. A session row lives in the `sessions` table; the browser only holds
   an `jose`-signed JWT containing the session id, in an `httpOnly`, `sameSite=lax` cookie
   (`src/lib/auth/session.ts`). 30-day expiry.
-- **Two-step login**: password → **pending cookie** (`cepm12_pending`, 10 min TTL, stage
-  `"setup"` or `"verify"`) → TOTP code → real session. The pending cookie is what lets
-  `/setup-2fa` and `/verify-2fa` know who's mid-login without granting access yet.
+- **Two-step login**: password → **pending cookie** (`cepm12_pending`, 10 min TTL, just the user id)
+  → OTP code emailed and entered → real session. Both signup and login go through the exact same
+  pending-cookie → `/verify-2fa` path now (there's no separate "enrollment" step like TOTP needed).
 - **Route protection**: `src/proxy.ts` does an *optimistic* check (cookie present or not) on
   `/admin`, `/store`, `/account` and redirects to `/login` early. The **authoritative** check is
   `requireUser(roles?)` in `src/lib/auth/dal.ts`, called at the top of each protected page — always
@@ -195,8 +203,9 @@ The most likely next piece of work. Rough shape, following existing patterns:
 There's no automated test suite yet. Manually verify at minimum:
 
 - `bun run build` and `bun run lint` are clean.
-- Sign up as `user` and as `store`, complete TOTP setup, land on the right page per role.
-- Log out, log back in, complete TOTP verify.
+- Sign up as `user` and as `store`, complete the emailed OTP step, land on the right page per role.
+- Log out, log back in, complete OTP verify again with a fresh code.
+- The "ส่งรหัสอีกครั้ง" (resend) button works and its 30-second cooldown actually blocks a second send.
 - Confirm role gating: a `user`-role account visiting `/admin` or `/store` bounces to `/account`.
 - Scan/toggle a checkpoint while signed in, hard-reload, confirm it persisted (server-backed).
 - Sign out and confirm guest `localStorage` progress still works independently.

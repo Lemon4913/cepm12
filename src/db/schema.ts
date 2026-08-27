@@ -12,8 +12,9 @@ export const users = sqliteTable("users", {
   role: text("role", { enum: roles }).notNull().default("user"),
   storeName: text("store_name"),
   newsOptIn: integer("news_opt_in", { mode: "boolean" }).notNull().default(false),
-  totpSecret: text("totp_secret"),
-  totpEnabled: integer("totp_enabled", { mode: "boolean" }).notNull().default(false),
+  // HMAC of the current pending one-time code, if any (never store the raw code).
+  otpCodeHash: text("otp_code_hash"),
+  otpExpiresAt: integer("otp_expires_at", { mode: "timestamp" }),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),

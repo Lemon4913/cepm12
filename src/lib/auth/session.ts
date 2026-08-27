@@ -10,8 +10,6 @@ const PENDING_COOKIE = "cepm12_pending";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const PENDING_TTL_S = 10 * 60; // 10 minutes
 
-type PendingStage = "setup" | "verify";
-
 // Computed lazily (not at module load) so importing this file — e.g. transitively, from
 // any page that checks "is someone logged in?" — doesn't crash Next's build-time page
 // data collection just because SESSION_SECRET isn't set in that environment yet. The
@@ -45,7 +43,7 @@ async function verify(token: string | undefined) {
   }
 }
 
-/** Full authenticated session, created only after password + TOTP both succeed. */
+/** Full authenticated session, created only after password + emailed OTP code both succeed. */
 export async function createSession(userId: string) {
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
   const sessionId = crypto.randomUUID();
@@ -78,7 +76,6 @@ export async function getSessionUser() {
       role: users.role,
       storeName: users.storeName,
       newsOptIn: users.newsOptIn,
-      totpEnabled: users.totpEnabled,
       expiresAt: sessions.expiresAt,
     })
     .from(sessions)
@@ -96,7 +93,6 @@ export async function getSessionUser() {
     role: row.role,
     storeName: row.storeName,
     newsOptIn: row.newsOptIn,
-    totpEnabled: row.totpEnabled,
   };
 }
 
@@ -112,12 +108,12 @@ export async function deleteSession() {
 }
 
 /**
- * Short-lived cookie used between "password verified" and "TOTP verified" (login),
- * or between "account created" and "TOTP enrolled" (signup). Never grants access on
- * its own — it only proves the password step already succeeded.
+ * Short-lived cookie used between "password verified" and "OTP code verified".
+ * Never grants access on its own — it only proves the password step already succeeded
+ * and says which account the emailed code was sent to.
  */
-export async function setPendingAuth(userId: string, stage: PendingStage) {
-  const token = await sign({ sub: userId, stage }, `${PENDING_TTL_S}s`);
+export async function setPendingAuth(userId: string) {
+  const token = await sign({ sub: userId }, `${PENDING_TTL_S}s`);
   const cookieStore = await cookies();
   cookieStore.set(PENDING_COOKIE, token, {
     httpOnly: true,
@@ -128,12 +124,12 @@ export async function setPendingAuth(userId: string, stage: PendingStage) {
   });
 }
 
-export async function getPendingAuth(): Promise<{ userId: string; stage: PendingStage } | null> {
+export async function getPendingAuth(): Promise<{ userId: string } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(PENDING_COOKIE)?.value;
   const payload = await verify(token);
-  if (typeof payload?.sub !== "string" || typeof payload?.stage !== "string") return null;
-  return { userId: payload.sub, stage: payload.stage as PendingStage };
+  if (typeof payload?.sub !== "string") return null;
+  return { userId: payload.sub };
 }
 
 export async function clearPendingAuth() {
