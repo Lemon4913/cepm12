@@ -1,32 +1,32 @@
 import "server-only";
-import { createClient, type Client } from "@libsql/client";
-import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
+import postgres, { type Sql } from "postgres";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
+import { getDatabaseUrl } from "./connection-string";
 
 type Schema = typeof schema;
 
 const globalForDb = globalThis as unknown as {
-  libsqlClient?: Client;
-  drizzleDb?: LibSQLDatabase<Schema>;
+  pgClient?: Sql;
+  drizzleDb?: PostgresJsDatabase<Schema>;
 };
 
-// Opening the database file is deferred to first real use (not module load) so that
+// Opening the connection is deferred to first real use (not module load) so that
 // importing this file — e.g. transitively, from any page that just checks auth state —
-// doesn't fail Next's build-time page data collection. That step runs before deploy
-// platforms like Railway mount a persistent volume, so the DB file/directory may not
-// exist yet at build time even though it will at request time.
-function getDb(): LibSQLDatabase<Schema> {
+// doesn't fail Next's build-time page data collection or crash on missing env vars
+// before the Postgres container is actually reachable.
+function getDb(): PostgresJsDatabase<Schema> {
   if (globalForDb.drizzleDb) return globalForDb.drizzleDb;
 
-  const client = createClient({ url: `file:${process.env.DATABASE_URL ?? "app.sqlite"}` });
+  const client = postgres(getDatabaseUrl());
   const instance = drizzle(client, { schema });
 
-  globalForDb.libsqlClient = client;
+  globalForDb.pgClient = client;
   globalForDb.drizzleDb = instance;
   return instance;
 }
 
-export const db: LibSQLDatabase<Schema> = new Proxy({} as LibSQLDatabase<Schema>, {
+export const db: PostgresJsDatabase<Schema> = new Proxy({} as PostgresJsDatabase<Schema>, {
   get(_target, prop, receiver) {
     return Reflect.get(getDb(), prop, receiver);
   },

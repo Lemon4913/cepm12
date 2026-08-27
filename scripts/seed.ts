@@ -1,12 +1,14 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { users } from "../src/db/schema";
+import { getDatabaseUrl } from "../src/db/connection-string";
 
 // Note: this script is run standalone via `bun run`, not through Next.js's
 // bundler, so it can't import anything that pulls in the "server-only" guard
-// (src/db, src/lib/auth/password.ts) — it talks to the database directly.
+// (src/db/index.ts, src/lib/auth/password.ts) — it talks to the database
+// directly instead.
 function hashPassword(password: string) {
   return bcrypt.hash(password, 12);
 }
@@ -20,12 +22,13 @@ if (!email || !password) {
   process.exit(1);
 }
 
-const client = createClient({ url: `file:${process.env.DATABASE_URL ?? "app.sqlite"}` });
+const client = postgres(getDatabaseUrl());
 const db = drizzle(client);
 
 const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
 if (existing.length > 0) {
   console.log(`Admin account already exists for ${email}. Nothing to do.`);
+  await client.end();
   process.exit(0);
 }
 
@@ -41,3 +44,5 @@ await db.insert(users).values({
 
 console.log(`Created admin account for ${email}.`);
 console.log("Log in with that email/password — a 6-digit code will be emailed to you to finish logging in.");
+
+await client.end();

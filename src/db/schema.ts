@@ -1,37 +1,34 @@
-import { sql } from "drizzle-orm";
-import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { pgTable, pgEnum, text, boolean, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const roles = ["admin", "store", "user"] as const;
 export type Role = (typeof roles)[number];
 
-export const users = sqliteTable("users", {
+export const roleEnum = pgEnum("role", roles);
+
+export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
-  role: text("role", { enum: roles }).notNull().default("user"),
+  role: roleEnum("role").notNull().default("user"),
   storeName: text("store_name"),
-  newsOptIn: integer("news_opt_in", { mode: "boolean" }).notNull().default(false),
+  newsOptIn: boolean("news_opt_in").notNull().default(false),
   // HMAC of the current pending one-time code, if any (never store the raw code).
   otpCodeHash: text("otp_code_hash"),
-  otpExpiresAt: integer("otp_expires_at", { mode: "timestamp" }),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(current_timestamp)`),
+  otpExpiresAt: timestamp("otp_expires_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const sessions = sqliteTable("sessions", {
+export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(current_timestamp)`),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const checkpointProgress = sqliteTable(
+export const checkpointProgress = pgTable(
   "checkpoint_progress",
   {
     id: text("id").primaryKey(),
@@ -39,9 +36,7 @@ export const checkpointProgress = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     checkpointId: text("checkpoint_id").notNull(),
-    scannedAt: text("scanned_at")
-      .notNull()
-      .default(sql`(current_timestamp)`),
+    scannedAt: timestamp("scanned_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex("checkpoint_progress_user_checkpoint_idx").on(table.userId, table.checkpointId)],
 );
