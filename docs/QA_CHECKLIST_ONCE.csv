@@ -1,0 +1,6 @@
+Section,#,Check,Result,Notes
+"0. Infra (check once, not per device)",1,"bun run build and bun run lint are clean.",,
+"0. Infra (check once, not per device)",2,"Correct .env values are set on the deploy target (Railway Variables or the school server's .env) — DATABASE_URL, SESSION_SECRET, RESEND_API_KEY, EMAIL_FROM, ADMIN_EMAIL/ADMIN_PASSWORD/ADMIN_NAME, NODE_ENV=production.",,
+"0. Infra (check once, not per device)",3,"Postgres is reachable — schema pushed (bun run db:push) and admin seeded (bun run db:seed) against this database.",,
+"0. Infra (check once, not per device)",4,"The site loads over HTTPS with a browser-trusted certificate (no ""not private"" warning).",,
+"0. Infra (check once, not per device)",5,"Process is still running a few minutes after deploy, not just right after (systemctl status / Railway logs) — catches crash loops.",,
