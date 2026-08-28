@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { CheckpointList } from "@/components/checkpoint-list";
+import { ManualCodeEntry } from "@/components/manual-code-entry";
 import { getCheckpointByQrValue } from "@/lib/checkpoints";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 
@@ -18,15 +19,11 @@ export default function ScanPage() {
   const [paused, setPaused] = useState(false);
   const lastValueRef = useRef<string | null>(null);
 
-  const handleDecode = useCallback(
+  const processCode = useCallback(
     (value: string) => {
-      if (value === lastValueRef.current) return;
-      lastValueRef.current = value;
-
       const checkpoint = getCheckpointByQrValue(value);
       if (!checkpoint) {
-        toast.error("QR Code นี้ไม่ใช่จุดเช็คอินของตลาดท่านา");
-        setTimeout(() => (lastValueRef.current = null), 1500);
+        toast.error("รหัสนี้ไม่ใช่จุดเช็คอินของตลาดท่านา");
         return;
       }
 
@@ -35,12 +32,22 @@ export default function ScanPage() {
       } else {
         markScanned(checkpoint.id);
         toast.success(`เช็คอินสำเร็จ: ${checkpoint.nameTh}`);
-        setPaused(true);
-        setTimeout(() => setPaused(false), 1500);
       }
-      setTimeout(() => (lastValueRef.current = null), 1500);
     },
     [isScanned, markScanned],
+  );
+
+  const handleDecode = useCallback(
+    (value: string) => {
+      if (value === lastValueRef.current) return;
+      lastValueRef.current = value;
+
+      processCode(value);
+      setPaused(true);
+      setTimeout(() => setPaused(false), 1500);
+      setTimeout(() => (lastValueRef.current = null), 1500);
+    },
+    [processCode],
   );
 
   return (
@@ -49,6 +56,8 @@ export default function ScanPage() {
 
       <main className="flex flex-1 flex-col gap-4 p-4">
         <QrCodeScanner onDecode={handleDecode} paused={paused} />
+
+        <ManualCodeEntry onSubmitCode={processCode} />
 
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium text-muted-foreground">จุดเช็คอินทั้งหมด</h2>

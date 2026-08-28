@@ -4,60 +4,67 @@ export type Checkpoint = {
   nameTh: string;
   nameEn: string;
   descriptionTh: string;
-  /** Value encoded in this checkpoint's printed QR code. */
+  /** The 6-digit code printed/encoded in this checkpoint's physical sign. */
   qrValue: string;
 };
 
-// Placeholder checkpoint data for the Talat Tha Na walk-rally.
-// Replace with real check-in points once the art team delivers the survey data.
+// Real check-in points, per "ตำแหน่งติดตั้งป้ายจุด check-in" (site survey PDF from the art/install team).
 export const checkpoints: Checkpoint[] = [
   {
     id: "cp-01",
     order: 1,
-    nameTh: "ท่าเรือตลาดท่านา",
-    nameEn: "Talat Tha Na Pier",
-    descriptionTh: "จุดเริ่มต้นทางประวัติศาสตร์ อดีตท่าเรือขนส่งข้าวเปลือกและข้าวสารริมแม่น้ำนครไชยศรี",
-    qrValue: "cepm12:checkpoint:cp-01",
+    nameTh: "ตู้จำหน่ายอาหารปลาอัตโนมัติ",
+    nameEn: "Fish Feeding Station",
+    descriptionTh: "ตู้จำหน่ายอาหารปลาอัตโนมัติบริเวณริมน้ำ กิจกรรมยอดนิยมสำหรับนักท่องเที่ยวทุกวัย",
+    qrValue: "482913",
   },
   {
     id: "cp-02",
     order: 2,
-    nameTh: "ตรอกจิตรกรรมฝาผนัง",
-    nameEn: "Mural Alley",
-    descriptionTh: "ภาพจิตรกรรมฝาผนังที่บอกเล่าเอกลักษณ์และวิถีชีวิตของชุมชนตลาดท่านา",
-    qrValue: "cepm12:checkpoint:cp-02",
+    nameTh: "เสาปูนบริเวณจุดรับประทานอาหาร",
+    nameEn: "Dining Area Pillar",
+    descriptionTh: "เสาปูนกลางจุดรับประทานอาหารในตลาด จุดพักระหว่างเดินชมตลาด",
+    qrValue: "067254",
   },
   {
     id: "cp-03",
     order: 3,
-    nameTh: "จุดให้อาหารปลา",
-    nameEn: "Fish Feeding Point",
-    descriptionTh: "ตู้อาหารปลาริมน้ำ กิจกรรมยอดนิยมสำหรับนักท่องเที่ยวทุกวัย",
-    qrValue: "cepm12:checkpoint:cp-03",
+    nameTh: "โซนข้างศูนย์อาหาร หน้าร้านขายของเล่น",
+    nameEn: "Toy Shop Corner",
+    descriptionTh: "โซนข้างศูนย์อาหาร บริเวณเสาหน้าร้านขายของเล่น",
+    qrValue: "739481",
   },
   {
     id: "cp-04",
     order: 4,
-    nameTh: "ตลาดร้านค้าดั้งเดิม",
-    nameEn: "Old Market Row",
-    descriptionTh: "แถวร้านค้าดั้งเดิมอายุกว่า 140 ปี จำหน่ายสินค้าและของกินพื้นถิ่น",
-    qrValue: "cepm12:checkpoint:cp-04",
+    nameTh: "ซอยภาพจิตรกรรมฝาผนัง (ตลาดท่านา)",
+    nameEn: "Market Mural Alley",
+    descriptionTh: "ภาพจิตรกรรมฝาผนังรูปตลาดท่านา บอกเล่าเรื่องราวตลาดในอดีต",
+    qrValue: "215608",
   },
   {
     id: "cp-05",
     order: 5,
-    nameTh: "ศาลาประวัติศาสตร์ชุมชน",
-    nameEn: "Community History Pavilion",
-    descriptionTh: "จุดรวบรวมเรื่องราวความเป็นมาของตลาดท่านาตั้งแต่สมัยรัชกาลที่ 1",
-    qrValue: "cepm12:checkpoint:cp-05",
+    nameTh: "ซอยภาพจิตรกรรมฝาผนัง (รถสองแถว)",
+    nameEn: "Songthaew Mural Alley",
+    descriptionTh: "ภาพจิตรกรรมฝาผนังรูปรถสองแถว สัญลักษณ์การเดินทางของชุมชน",
+    qrValue: "894027",
   },
   {
     id: "cp-06",
     order: 6,
-    nameTh: "จุดจอดรถชุมชน",
-    nameEn: "Community Parking Point",
-    descriptionTh: "พื้นที่จอดรถที่จัดการโดยหน่วยงานและผู้นำชุมชน จุดสิ้นสุดเส้นทาง",
-    qrValue: "cepm12:checkpoint:cp-06",
+    nameTh: "ข้างร้านพรเจริญ",
+    nameEn: "Phon Charoen Shop",
+    descriptionTh: "จุดเช็คอินข้างร้านพรเจริญ ร้านค้าดั้งเดิมของตลาดท่านา",
+    qrValue: "350962",
+  },
+  {
+    id: "cp-07",
+    order: 7,
+    nameTh: "ลานจอดรถศาลเจ้าแม่เบิกไพร",
+    nameEn: "Chao Mae Boek Phrai Shrine Parking",
+    descriptionTh: "ลานจอดรถศาลเจ้าแม่เบิกไพร จุดสิ้นสุดเส้นทางเดินชมตลาด",
+    qrValue: "671845",
   },
 ];
 

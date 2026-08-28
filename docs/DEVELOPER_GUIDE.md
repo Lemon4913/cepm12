@@ -48,6 +48,7 @@ src/
     progress-summary-card.tsx   "X / 6 scanned" card
     qr-code-scanner.tsx         Camera-based QR decode (dynamic-imported, client-only)
     qr-code-preview.tsx         Renders a QR code image from a string (admin checkpoint printouts)
+    manual-code-entry.tsx        Type-in fallback for the 6-digit checkpoint code (no camera needed)
   hooks/
     use-checkpoint-progress.ts  Single source of truth for scan progress — see below
   lib/
@@ -69,16 +70,21 @@ docker-compose.yml               Local Postgres container
 ## Features implemented
 
 1. **Bottom-nav shell** — 4 tabs (Common Info / Map / Scan / Others), mobile-first, safe-area aware.
-2. **Checkpoint check-in system** — static list in `src/lib/checkpoints.ts`; scanning a checkpoint's
-   QR code (value format `cepm12:checkpoint:<id>`) marks it scanned via
-   `src/hooks/use-checkpoint-progress.ts`.
-3. **Accounts + mandatory email-OTP 2FA** for three roles (`admin`, `store`, `user`). See
+2. **Checkpoint check-in system** — real check-in points (per the art/install team's site survey PDF)
+   in `src/lib/checkpoints.ts`. Each checkpoint's `qrValue` is a 6-digit numeric code, printed on its
+   physical sign as both a QR code and plain digits. Scanning (or manually typing) that code marks it
+   scanned via `src/hooks/use-checkpoint-progress.ts`.
+3. **Manual code entry fallback** (`/scan`, `src/components/manual-code-entry.tsx`) — for when the
+   camera isn't available/permitted, visitors can type the 6-digit code instead. Shares the same
+   lookup/mark-scanned logic as camera decode (`processCode` in `src/app/scan/page.tsx`), just without
+   the camera's short re-scan cooldown.
+4. **Accounts + mandatory email-OTP 2FA** for three roles (`admin`, `store`, `user`). See
    [Auth flow](#auth-flow) below.
-4. **Server-synced progress** — signed-in users' scans are stored in the `checkpoint_progress` table
+5. **Server-synced progress** — signed-in users' scans are stored in the `checkpoint_progress` table
    instead of (or in addition to, on first login) `localStorage`.
-5. **Admin tools** (`/admin`, role-gated) — manually toggle a checkpoint's scanned state (for
+6. **Admin tools** (`/admin`, role-gated) — manually toggle a checkpoint's scanned state (for
    testing), view/print each checkpoint's QR code, reset progress.
-6. Everything is in Thai (the UI language), IBM Plex Sans Thai throughout.
+7. Everything is in Thai (the UI language), IBM Plex Sans Thai throughout.
 
 ### Not yet built (known gaps)
 
