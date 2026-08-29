@@ -158,3 +158,103 @@
     background: #fff;
   }
 }
+
+/* Tactile press feedback on every shadcn Button — a small, snappy "give" on tap. */
+[data-slot="button"]:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* Checkmark "pop" the instant a checkpoint flips to scanned. */
+@keyframes pop-check {
+  0% {
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pop-check {
+  animation: pop-check 480ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Checkpoint list rows fade/slide in on mount, staggered via --stagger-index. */
+@keyframes list-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-list-item-in {
+  animation: list-item-in 320ms ease-out both;
+  animation-delay: calc(var(--stagger-index, 0) * 40ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop-check,
+  .animate-list-item-in {
+    animation: none;
+  }
+}
+
+/* Slide transition between the 4 main tabs, driven by document.startViewTransition()
+   (see src/lib/view-transition-navigate.ts) and gated on the direction it stamps onto <html>. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.32s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  html[data-nav-direction="forward"]::view-transition-old(root) {
+    animation-name: tab-slide-out-left;
+  }
+  html[data-nav-direction="forward"]::view-transition-new(root) {
+    animation-name: tab-slide-in-right;
+  }
+  html[data-nav-direction="back"]::view-transition-old(root) {
+    animation-name: tab-slide-out-right;
+  }
+  html[data-nav-direction="back"]::view-transition-new(root) {
+    animation-name: tab-slide-in-left;
+  }
+
+  @keyframes tab-slide-out-left {
+    to {
+      transform: translateX(-24%);
+      opacity: 0;
+    }
+  }
+  @keyframes tab-slide-in-right {
+    from {
+      transform: translateX(24%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  @keyframes tab-slide-out-right {
+    to {
+      transform: translateX(24%);
+      opacity: 0;
+    }
+  }
+  @keyframes tab-slide-in-left {
+    from {
+      transform: translateX(-24%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+}

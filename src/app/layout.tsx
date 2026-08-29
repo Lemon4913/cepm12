@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { AchievementWatcher } from "@/components/achievement/achievement-watcher";
+import { SwipeTabNavigation } from "@/components/navigation/swipe-tab-navigation";
+import { RubberBandScroll } from "@/components/interactions/rubber-band-scroll";
 
 const ibmPlexSansThai = IBM_Plex_Sans_Thai({
   variable: "--font-sans",
@@ -44,13 +46,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20 sm:max-w-lg">
+          <RubberBandScroll className="mx-auto max-w-md pb-20 sm:max-w-lg">
             {children}
-          </div>
+          </RubberBandScroll>
           <BottomNav />
           <Toaster position="top-center" />
           <OnboardingTour />
           <AchievementWatcher />
+          <SwipeTabNavigation />
         </ThemeProvider>
       </body>
     </html>
