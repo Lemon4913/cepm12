@@ -4,6 +4,8 @@ import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
+import { AchievementWatcher } from "@/components/achievement/achievement-watcher";
 
 const ibmPlexSansThai = IBM_Plex_Sans_Thai({
   variable: "--font-sans",
@@ -42,6 +44,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
           <BottomNav />
           <Toaster position="top-center" />
+          <OnboardingTour />
+          <AchievementWatcher />
         </ThemeProvider>
       </body>
     </html>

@@ -3,12 +3,25 @@
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { AdminCheckpointTable } from "@/components/admin-checkpoint-table";
+import { AdminManagement } from "@/components/admin/admin-management";
+import { PhotoThresholdForm } from "@/components/admin/photo-threshold-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
+import type { AdminUserSummary } from "@/app/actions/admin";
 
-export function AdminDashboard({ adminName }: { adminName: string }) {
+export function AdminDashboard({
+  adminName,
+  adminId,
+  admins,
+  photoThreshold,
+}: {
+  adminName: string;
+  adminId: string;
+  admins: AdminUserSummary[];
+  photoThreshold: number;
+}) {
   const { resetProgress } = useCheckpointProgress();
 
   return (
@@ -26,6 +39,27 @@ export function AdminDashboard({ adminName }: { adminName: string }) {
               ประจำจุดนั้น
             </p>
             <AdminCheckpointTable />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">รูปภาพความสำเร็จ</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              เมื่อผู้ใช้สแกนครบตามจำนวนนี้ ระบบจะปลดล็อกให้ถ่ายรูปและดาวน์โหลด/แชร์รูปความสำเร็จได้
+            </p>
+            <PhotoThresholdForm defaultValue={photoThreshold} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">ผู้ดูแลระบบ</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AdminManagement admins={admins} currentUserId={adminId} />
           </CardContent>
         </Card>
 

@@ -1,9 +1,19 @@
 import Link from "next/link";
-import { ExternalLink, ShieldUser, ChevronRight, UserCircle, LogIn, UserPlus, Store } from "lucide-react";
+import {
+  ExternalLink,
+  ShieldUser,
+  ChevronRight,
+  UserCircle,
+  LogIn,
+  UserPlus,
+  Store,
+  Sparkles,
+} from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteConfig } from "@/lib/site-config";
 import { getCurrentUser } from "@/lib/auth/dal";
+import { ReplayOnboardingButton } from "@/components/onboarding/replay-onboarding-button";
 
 export default async function OthersPage() {
   const user = await getCurrentUser();
@@ -78,6 +88,17 @@ export default async function OthersPage() {
                 <ChevronRight className="size-4 text-muted-foreground" />
               </Link>
             ) : null}
+
+            <Link href="/achievement" className="flex items-center gap-3 p-4 transition-colors hover:bg-accent">
+              <Sparkles className="size-5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">รูปภาพความสำเร็จ</p>
+                <p className="text-xs text-muted-foreground">ถ่ายรูปเมื่อสำรวจครบตามเป้า แล้วดาวน์โหลด/แชร์ได้</p>
+              </div>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+
+            <ReplayOnboardingButton />
 
             {user?.role === "admin" ? (
               <Link href="/admin" className="flex items-center gap-3 p-4 transition-colors hover:bg-accent">

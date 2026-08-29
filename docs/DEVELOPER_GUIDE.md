@@ -32,17 +32,26 @@ src/
     account/page.tsx        Logged-in user's profile + news opt-in + progress (role-gated)
     admin/page.tsx           Admin dashboard (role-gated: "admin")
     store/page.tsx           Store owner dashboard (role-gated: "store" | "admin") — placeholder
+    achievement/page.tsx      Photo-share unlock page — see Achievement photo feature
     login/, signup/, verify-2fa/    Auth pages
     actions/
       auth.ts                Server actions: signup, login, verify/resend OTP, logout, news opt-in
       progress.ts             Server actions: read/write a signed-in user's checkpoint progress
-    layout.tsx               Root layout: font, theme provider, bottom nav, toaster
+      admin.ts                Server actions: list/promote/demote admins (multi-admin support)
+      settings.ts              Server actions: read/update the app_settings singleton row
+                                (currently just photoUnlockThreshold)
+    layout.tsx               Root layout: font, theme provider, bottom nav, toaster,
+                              OnboardingTour, AchievementWatcher (both mounted globally here)
     globals.css               Design tokens (see Theming)
   components/
     ui/                     shadcn primitives (button, card, dialog, input, ...)
     auth/                   signup/login/OTP forms, logout button
-    admin/                  admin dashboard client component
+    admin/                  admin dashboard client component, admin-management,
+                            photo-threshold-form
     account/                news opt-in toggle
+    achievement/              achievement-watcher (global, detects crossing the threshold),
+                              achievement-photo-card (camera capture + canvas compositing)
+    onboarding/               onboarding-tour (first-visit walkthrough), replay-onboarding-button
     bottom-nav.tsx            The 4-tab bottom bar
     checkpoint-list.tsx        Scanned/unscanned checkpoint list (used on Home, Scan, Account)
     progress-summary-card.tsx   "X / 6 scanned" card
@@ -56,7 +65,8 @@ src/
     site-config.ts              Editable site-wide config (GitHub URL, etc.)
     auth/                      password.ts, otp.ts, email.ts, session.ts, dal.ts, schemas.ts
   db/
-    schema.ts                   Drizzle table definitions (users, sessions, checkpoint_progress)
+    schema.ts                   Drizzle table definitions (users, sessions, checkpoint_progress,
+                                app_settings)
     connection-string.ts         Builds a Postgres URL from env vars — no "server-only" import,
                                   safe to use from drizzle.config.ts and scripts/seed.ts too
     index.ts                    DB client singleton (lazy — see Database)
@@ -84,7 +94,18 @@ docker-compose.yml               Local Postgres container
    instead of (or in addition to, on first login) `localStorage`.
 6. **Admin tools** (`/admin`, role-gated) — manually toggle a checkpoint's scanned state (for
    testing), view/print each checkpoint's QR code, reset progress.
-7. Everything is in Thai (the UI language), IBM Plex Sans Thai throughout.
+7. **Multiple admins** — an existing admin can promote any registered user (by email) to `admin`,
+   and demote others (never themselves, and never the last remaining admin). See
+   [Multi-admin support](#multi-admin-support) below.
+8. **First-visit onboarding tour** (`src/components/onboarding/`) — a 5-step walkthrough dialog shown
+   once automatically (tracked in `localStorage`, key `cepm12:onboarding-seen`), replayable anytime
+   from Others → "ดูคำแนะนำการใช้งานอีกครั้ง".
+9. **Achievement photo/share** (`/achievement`) — once a visitor's scan count reaches an
+   admin-configurable threshold (`app_settings.photoUnlockThreshold`, default 5), they can take a
+   selfie, which gets composited onto a branded card (canvas, client-side only — the photo never hits
+   the server) they can download or share via the Web Share API. See
+   [Achievement photo feature](#achievement-photo-feature) below.
+10. Everything is in Thai (the UI language), IBM Plex Sans Thai throughout.
 
 ### Not yet built (known gaps)
 
@@ -98,7 +119,6 @@ docker-compose.yml               Local Postgres container
   (`users.newsOptIn`), but nothing sends an actual newsletter. The email infrastructure (Resend) is
   already wired up for OTP codes, so building this is mostly "compose an email, loop over opted-in
   users" — see `src/lib/auth/email.ts` for the existing send pattern.
-- **No admin UI to promote a user to admin** — only `bun run db:seed` creates an admin account.
 
 ## Auth flow
 
@@ -130,6 +150,42 @@ the one (Resend) needed to actually deliver email.
   an admin is `bun run db:seed` (reads `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` from `.env`).
   If you build an admin-management UI, gate it behind `requireUser(["admin"])`.
 
+## Multi-admin support
+
+`src/app/actions/admin.ts`. Any signed-in admin can:
+
+- **Promote**: enter a *registered* user's email → their `role` becomes `admin`. The target must
+  already have an account (signup still only offers `user`/`store` — there's still no way to create
+  a brand-new admin account directly, only to promote an existing one).
+- **Demote**: revoke another admin's role back to `user`. Two guards, both server-enforced (not just
+  hidden in the UI): an admin can't demote themselves, and the last remaining admin can't be demoted
+  by anyone — `listAdmins().length <= 1` blocks it. This prevents ever locking everyone out of `/admin`.
+
+UI lives in `src/components/admin/admin-management.tsx`, rendered on `/admin`. `bun run db:seed` is
+still the only way to create the *first* admin from nothing.
+
+## Achievement photo feature
+
+- **Threshold**: a single admin-editable number, `app_settings.photoUnlockThreshold` (singleton row,
+  `id = 1`, default `5`). Read via `getPhotoUnlockThreshold()` — deliberately **not** gated behind
+  auth, since guests need to know when they've unlocked it too. Updated via
+  `updatePhotoUnlockThreshold()` (admin-only), form in `src/components/admin/photo-threshold-form.tsx`.
+- **Detection**: `src/components/achievement/achievement-watcher.tsx`, mounted once globally in the
+  root layout. Compares live `scannedCount` (from `useCheckpointProgress()`) against the threshold;
+  the moment it's first crossed, fires a one-time toast (guarded by `localStorage` key
+  `cepm12:achievement-celebrated`) with a button linking to `/achievement`.
+- **The card itself**: `src/components/achievement/achievement-photo-card.tsx`. Deliberately has
+  **no server round-trip for the photo** — capture is a plain `<input type="file" accept="image/*"
+  capture="user">` (opens the front camera directly on mobile, falls back to a file picker
+  elsewhere), and compositing (photo + gradient + Thai text) happens entirely in a `<canvas>` in the
+  browser. Output is a PNG data URL, offered via a plain `<a download>` and, where supported,
+  `navigator.share()` with a `File`. No image ever touches the database or a server — this was a
+  deliberate privacy/simplicity choice; revisit only if a future requirement needs the photos stored
+  server-side (e.g. an admin gallery of submissions).
+- Canvas text uses the `IBM Plex Sans Thai` family by name — it renders correctly because the font is
+  already loaded application-wide via `next/font`, but compositing code awaits `document.fonts.ready`
+  first to avoid a fallback-font flash on the very first draw.
+
 ## Database
 
 Postgres via Drizzle ORM, using the `postgres` (postgres.js) driver — a normal npm package, not
@@ -159,7 +215,8 @@ bun run db:seed            # create the first admin account from .env
 ```
 
 Tables (`src/db/schema.ts`): `users` (`role` is a real Postgres enum: admin/store/user), `sessions`,
-`checkpoint_progress` (unique on `userId` + `checkpointId`).
+`checkpoint_progress` (unique on `userId` + `checkpointId`), `app_settings` (singleton row, `id = 1`,
+currently just holds `photoUnlockThreshold`).
 
 `src/db/index.ts` and everything under `src/lib/auth/` import the `server-only` package, which
 throws if imported outside Next.js's bundler. That means **`scripts/seed.ts` cannot import from
@@ -235,3 +292,7 @@ There's no automated test suite yet. Manually verify at minimum:
 - Confirm role gating: a `user`-role account visiting `/admin` or `/store` bounces to `/account`.
 - Scan/toggle a checkpoint while signed in, hard-reload, confirm it persisted (server-backed).
 - Sign out and confirm guest `localStorage` progress still works independently.
+- Promote a second account to admin, confirm it can access `/admin`; confirm you can't demote
+  yourself, and can't demote the last remaining admin.
+- Set the photo-unlock threshold low (e.g. 1) in `/admin`, scan one checkpoint, confirm the
+  celebration toast fires and `/achievement` unlocks; confirm it does **not** fire again on reload.

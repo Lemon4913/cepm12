@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, text, boolean, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, text, boolean, integer, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const roles = ["admin", "store", "user"] as const;
 export type Role = (typeof roles)[number];
@@ -40,3 +40,9 @@ export const checkpointProgress = pgTable(
   },
   (table) => [uniqueIndex("checkpoint_progress_user_checkpoint_idx").on(table.userId, table.checkpointId)],
 );
+
+/** Singleton row (id always 1) holding site-wide, admin-editable settings. */
+export const appSettings = pgTable("app_settings", {
+  id: integer("id").primaryKey(),
+  photoUnlockThreshold: integer("photo_unlock_threshold").notNull().default(5),
+});
