@@ -203,37 +203,28 @@
   }
 }
 
-/* Slide transition between the 4 main tabs, driven by document.startViewTransition()
-   (see src/lib/view-transition-navigate.ts) and gated on the direction it stamps onto <html>. */
+/* Slide transition between the 4 main tabs: a plain CSS animation on the new page's own
+   content node (src/components/navigation/page-transition.tsx), gated on the direction
+   src/lib/view-transition-navigate.ts stamps onto <html> right before navigating.
+   Deliberately NOT the View Transitions API — capturing a full-page screenshot for
+   document.startViewTransition() visibly stalled the main thread on slower machines. */
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.32s;
+  .page-transition {
+    animation-duration: 0.28s;
     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation-fill-mode: both;
   }
 
-  html[data-nav-direction="forward"]::view-transition-old(root) {
-    animation-name: tab-slide-out-left;
-  }
-  html[data-nav-direction="forward"]::view-transition-new(root) {
+  html[data-nav-direction="forward"] .page-transition {
     animation-name: tab-slide-in-right;
   }
-  html[data-nav-direction="back"]::view-transition-old(root) {
-    animation-name: tab-slide-out-right;
-  }
-  html[data-nav-direction="back"]::view-transition-new(root) {
+  html[data-nav-direction="back"] .page-transition {
     animation-name: tab-slide-in-left;
   }
 
-  @keyframes tab-slide-out-left {
-    to {
-      transform: translateX(-24%);
-      opacity: 0;
-    }
-  }
   @keyframes tab-slide-in-right {
     from {
-      transform: translateX(24%);
+      transform: translateX(16px);
       opacity: 0;
     }
     to {
@@ -241,15 +232,9 @@
       opacity: 1;
     }
   }
-  @keyframes tab-slide-out-right {
-    to {
-      transform: translateX(24%);
-      opacity: 0;
-    }
-  }
   @keyframes tab-slide-in-left {
     from {
-      transform: translateX(-24%);
+      transform: translateX(-16px);
       opacity: 0;
     }
     to {

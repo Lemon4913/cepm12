@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { AchievementWatcher } from "@/components/achievement/achievement-watcher";
 import { SwipeTabNavigation } from "@/components/navigation/swipe-tab-navigation";
+import { PageTransition } from "@/components/navigation/page-transition";
 import { RubberBandScroll } from "@/components/interactions/rubber-band-scroll";
 
 const ibmPlexSansThai = IBM_Plex_Sans_Thai({
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <RubberBandScroll className="mx-auto max-w-md pb-20 sm:max-w-lg">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </RubberBandScroll>
           <BottomNav />
           <Toaster position="top-center" />
