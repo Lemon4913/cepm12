@@ -12,7 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { QrCodePreview } from "@/components/qr-code-preview";
-import { CheckCircle2, Circle, QrCode } from "lucide-react";
+import { CheckCircle2, Circle, QrCode, Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function AdminCheckpointTable() {
@@ -71,7 +71,17 @@ export function AdminCheckpointTable() {
             <DialogTitle>{qrCheckpoint?.nameTh}</DialogTitle>
             <DialogDescription>พิมพ์ QR Code นี้ติดตั้งที่จุดเช็คอิน</DialogDescription>
           </DialogHeader>
-          {qrCheckpoint ? <QrCodePreview value={qrCheckpoint.qrValue} /> : null}
+          {qrCheckpoint ? (
+            <div data-print-root className="flex flex-col items-center gap-3 print:w-[300px]">
+              <QrCodePreview value={qrCheckpoint.qrValue} />
+              <p className="text-center text-lg font-semibold">{qrCheckpoint.nameTh}</p>
+              <p className="text-center font-mono text-2xl tracking-[0.3em]">{qrCheckpoint.qrValue}</p>
+            </div>
+          ) : null}
+          <Button variant="outline" onClick={() => window.print()} className="print:hidden">
+            <Printer className="size-4" />
+            พิมพ์
+          </Button>
         </DialogContent>
       </Dialog>
     </>

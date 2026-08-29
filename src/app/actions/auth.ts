@@ -18,6 +18,8 @@ export type AuthFormState = {
 } | null;
 
 const OTP_RESEND_COOLDOWN_MS = 30 * 1000;
+const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000;
 
 function roleHome(role: Role) {
   if (role === "admin") return "/admin";
@@ -105,8 +107,30 @@ export async function login(_prevState: AuthFormState, formData: FormData): Prom
   const rows = await db.select().from(users).where(eq(users.email, email)).limit(1);
   const user = rows[0];
 
+  if (user?.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+    const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60_000);
+    return {
+      error: `บัญชีนี้ถูกล็อกชั่วคราวเนื่องจากลองรหัสผ่านผิดหลายครั้งเกินไป กรุณาลองใหม่ในอีก ${minutesLeft} นาที`,
+    };
+  }
+
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    if (user) {
+      const attempts = user.failedLoginAttempts + 1;
+      if (attempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
+        await db
+          .update(users)
+          .set({ failedLoginAttempts: 0, lockedUntil: new Date(Date.now() + LOGIN_LOCKOUT_MS) })
+          .where(eq(users.id, user.id));
+      } else {
+        await db.update(users).set({ failedLoginAttempts: attempts }).where(eq(users.id, user.id));
+      }
+    }
     return { error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" };
+  }
+
+  if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+    await db.update(users).set({ failedLoginAttempts: 0, lockedUntil: null }).where(eq(users.id, user.id));
   }
 
   await issueOtp(user.id, user.email);

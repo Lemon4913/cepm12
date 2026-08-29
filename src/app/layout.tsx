@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   title: "ตลาดท่านา | Talat Tha Na",
   description:
     "เว็บแอปแผนที่ดิจิทัลและระบบสะสมตราประทับผ่านการสแกน QR Code สำหรับตลาดท่านา จ.นครปฐม",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {

@@ -8,6 +8,7 @@ import {
   UserPlus,
   Store,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,6 +95,15 @@ export default async function OthersPage() {
               <div className="flex-1">
                 <p className="text-sm font-medium">รูปภาพความสำเร็จ</p>
                 <p className="text-xs text-muted-foreground">ถ่ายรูปเมื่อสำรวจครบตามเป้า แล้วดาวน์โหลด/แชร์ได้</p>
+              </div>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+
+            <Link href="/feedback" className="flex items-center gap-3 p-4 transition-colors hover:bg-accent">
+              <Star className="size-5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">ให้คะแนนการใช้งาน</p>
+                <p className="text-xs text-muted-foreground">บอกเราว่าคุณคิดอย่างไรกับเว็บแอปนี้</p>
               </div>
               <ChevronRight className="size-4 text-muted-foreground" />
             </Link>

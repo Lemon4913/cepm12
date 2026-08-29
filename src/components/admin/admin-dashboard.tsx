@@ -5,22 +5,30 @@ import { PageHeader } from "@/components/page-header";
 import { AdminCheckpointTable } from "@/components/admin-checkpoint-table";
 import { AdminManagement } from "@/components/admin/admin-management";
 import { PhotoThresholdForm } from "@/components/admin/photo-threshold-form";
+import { StatsOverview } from "@/components/admin/stats-overview";
+import { FeedbackSummaryView } from "@/components/admin/feedback-summary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 import type { AdminUserSummary } from "@/app/actions/admin";
+import type { AdminStats } from "@/app/actions/stats";
+import type { FeedbackSummary } from "@/app/actions/feedback";
 
 export function AdminDashboard({
   adminName,
   adminId,
   admins,
   photoThreshold,
+  stats,
+  feedbackSummary,
 }: {
   adminName: string;
   adminId: string;
   admins: AdminUserSummary[];
   photoThreshold: number;
+  stats: AdminStats | null;
+  feedbackSummary: FeedbackSummary | null;
 }) {
   const { resetProgress } = useCheckpointProgress();
 
@@ -29,6 +37,17 @@ export function AdminDashboard({
       <PageHeader title="ผู้ดูแลระบบ" subtitle={`เข้าสู่ระบบในชื่อ ${adminName}`} />
 
       <main className="flex flex-1 flex-col gap-4 p-4">
+        {stats ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">ภาพรวม</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StatsOverview stats={stats} />
+            </CardContent>
+          </Card>
+        ) : null}
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">จุดเช็คอิน</CardTitle>
@@ -53,6 +72,17 @@ export function AdminDashboard({
             <PhotoThresholdForm defaultValue={photoThreshold} />
           </CardContent>
         </Card>
+
+        {feedbackSummary ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">ความคิดเห็นจากผู้ใช้</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FeedbackSummaryView summary={feedbackSummary} />
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card>
           <CardHeader>

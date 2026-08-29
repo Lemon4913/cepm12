@@ -54,7 +54,7 @@ export default function AchievementPage() {
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <Lock className="size-10 text-muted-foreground" />
+              <Lock className="size-16 text-primary/70" />
               <div className="w-full max-w-xs space-y-2">
                 <p className="font-medium">
                   สแกนอีก {(threshold as number) - scannedCount} จุด เพื่อปลดล็อกรูปภาพความสำเร็จ

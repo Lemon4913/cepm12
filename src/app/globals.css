@@ -129,3 +129,32 @@
     @apply font-sans;
   }
 }
+
+/* qr-scanner draws its viewfinder with an inline style (stroke:#e9b213, its
+   default amber) — override with the brand teal. !important is required to
+   beat that inline style; there's no prop to configure this color instead. */
+.scan-region-highlight-svg,
+.code-outline-highlight {
+  stroke: var(--primary) !important;
+}
+
+/* Admin's printable checkpoint QR dialog: print just the QR + label, nothing else.
+   Uses the visibility trick (not display:none on siblings) since it doesn't depend
+   on where the dialog's portal actually mounts in the DOM. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  [data-print-root],
+  [data-print-root] * {
+    visibility: visible;
+  }
+  [data-print-root] {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+}

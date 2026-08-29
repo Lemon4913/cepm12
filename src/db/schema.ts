@@ -16,6 +16,8 @@ export const users = pgTable("users", {
   // HMAC of the current pending one-time code, if any (never store the raw code).
   otpCodeHash: text("otp_code_hash"),
   otpExpiresAt: timestamp("otp_expires_at", { withTimezone: true }),
+  failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -45,4 +47,13 @@ export const checkpointProgress = pgTable(
 export const appSettings = pgTable("app_settings", {
   id: integer("id").primaryKey(),
   photoUnlockThreshold: integer("photo_unlock_threshold").notNull().default(5),
+});
+
+export const feedback = pgTable("feedback", {
+  id: text("id").primaryKey(),
+  // Nullable: feedback is open to guests too, not just signed-in accounts.
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPinned } from "lucide-react";
+import { MarketStallIllustration } from "@/components/illustrations/market-stall-illustration";
 
 export default function MapPage() {
   return (
@@ -10,7 +10,7 @@ export default function MapPage() {
       <main className="flex flex-1 flex-col gap-4 p-4">
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <MapPinned className="size-10 text-muted-foreground" />
+            <MarketStallIllustration className="size-24 text-primary/70" />
             <div className="space-y-1">
               <p className="font-medium">แผนที่กำลังจัดทำ</p>
               <p className="text-sm text-muted-foreground">

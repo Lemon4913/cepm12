@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 import { getPhotoUnlockThreshold } from "@/app/actions/settings";
+import { fireConfetti } from "@/lib/confetti";
 
 const CELEBRATED_KEY = "cepm12:achievement-celebrated";
 
@@ -39,6 +40,7 @@ export function AchievementWatcher() {
       // ignore — worst case the toast can fire again later
     }
 
+    fireConfetti();
     toast.success(`สำรวจครบ ${threshold} จุดแล้ว! ถ่ายรูปเก็บความทรงจำได้เลย`, {
       duration: 8000,
       action: {
