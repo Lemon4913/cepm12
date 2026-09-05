@@ -28,11 +28,9 @@ export default function ScanPage() {
       }
 
       if (isScanned(checkpoint.id)) {
-        navigator.vibrate?.(15);
         toast.info(`สแกน "${checkpoint.nameTh}" ไปแล้ว`);
       } else {
         markScanned(checkpoint.id);
-        navigator.vibrate?.([20, 40, 20]);
         toast.success(`เช็คอินสำเร็จ: ${checkpoint.nameTh}`);
       }
     },
