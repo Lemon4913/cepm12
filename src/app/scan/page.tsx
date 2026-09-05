@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { CheckpointList } from "@/components/checkpoint-list";
 import { ManualCodeEntry } from "@/components/manual-code-entry";
+import { TrophyBanner } from "@/components/achievement/trophy-banner";
 import { getCheckpointByQrValue } from "@/lib/checkpoints";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 
@@ -55,6 +56,8 @@ export default function ScanPage() {
       <PageHeader title="สแกน QR Code" subtitle="ส่องกล้องไปที่ QR Code ประจำจุดเช็คอิน" />
 
       <main className="flex flex-1 flex-col gap-4 p-4">
+        <TrophyBanner />
+
         <QrCodeScanner onDecode={handleDecode} paused={paused} />
 
         <ManualCodeEntry onSubmitCode={processCode} />
