@@ -86,10 +86,16 @@ export function MarketMap({
     <>
       <div className="relative h-[calc(100dvh-10.5rem)] w-full overflow-hidden rounded-lg border bg-muted">
         <TransformWrapper
-          minScale={0.4}
+          minScale={0.8}
           maxScale={8}
           centerOnInit
           fitOnInit="contain"
+          // Default bounds let you drag the map fully off-screen once it's
+          // zoomed out smaller than the viewport (its whole allowed pan slack
+          // equals how much smaller it is) — that's the "boundary too far
+          // away, lost the map" bug. This halves that slack so some part of
+          // the map always stays on screen no matter how far you pan.
+          centerZoomedOut
           // The library's default "smooth" wheel mode multiplies this step by
           // the wheel event's raw deltaY. A plain mouse fires one wheel event
           // per notch with deltaY ~100, so a step meant for "per notch" (e.g.
