@@ -90,7 +90,13 @@ export function MarketMap({
           maxScale={8}
           centerOnInit
           fitOnInit="contain"
-          wheel={{ step: 0.15 }}
+          // The library's default "smooth" wheel mode multiplies this step by
+          // the wheel event's raw deltaY. A plain mouse fires one wheel event
+          // per notch with deltaY ~100, so a step meant for "per notch" (e.g.
+          // 0.15) becomes a scale jump of ~15 — instantly past both zoom
+          // bounds. This step is calibrated for that multiplication instead,
+          // so a mouse notch moves the scale by a small, gradual amount.
+          wheel={{ step: 0.0015 }}
           doubleClick={{ mode: "zoomIn" }}
         >
           <TransformComponent wrapperClass="!h-full !w-full" contentClass="!h-full !w-full">
