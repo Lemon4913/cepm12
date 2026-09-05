@@ -5,9 +5,24 @@ import { toast } from "sonner";
 import { Camera, Download, Share2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const CARD_WIDTH = 1080;
-const CARD_HEIGHT = 1350;
+// Square to match the winner frame's own aspect ratio — cropping the selfie to
+// a non-square canvas here would either distort the frame or letterbox it.
+const CARD_SIZE = 1080;
 const FILE_NAME = "talat-tha-na-achievement.png";
+const FRAME_SRC = "/achievement/winner-frame.png";
+
+let framePromise: Promise<HTMLImageElement> | null = null;
+function loadFrame(): Promise<HTMLImageElement> {
+  if (!framePromise) {
+    framePromise = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = FRAME_SRC;
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Failed to load winner frame"));
+    });
+  }
+  return framePromise;
+}
 
 async function loadImage(file: File): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);
@@ -21,47 +36,27 @@ async function loadImage(file: File): Promise<HTMLImageElement> {
   }
 }
 
-function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement) {
-  const scale = Math.max(CARD_WIDTH / img.width, CARD_HEIGHT / img.height);
+function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, size: number) {
+  const scale = Math.max(size / img.width, size / img.height);
   const w = img.width * scale;
   const h = img.height * scale;
-  const x = (CARD_WIDTH - w) / 2;
-  const y = (CARD_HEIGHT - h) / 2;
+  const x = (size - w) / 2;
+  const y = (size - h) / 2;
   ctx.drawImage(img, x, y, w, h);
 }
 
-async function composite(file: File, scannedCount: number, total: number): Promise<string> {
-  const img = await loadImage(file);
+async function composite(file: File): Promise<string> {
+  const [img, frame] = await Promise.all([loadImage(file), loadFrame()]);
   await document.fonts.ready;
 
   const canvas = document.createElement("canvas");
-  canvas.width = CARD_WIDTH;
-  canvas.height = CARD_HEIGHT;
+  canvas.width = CARD_SIZE;
+  canvas.height = CARD_SIZE;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not supported");
 
-  drawCover(ctx, img);
-
-  const gradient = ctx.createLinearGradient(0, CARD_HEIGHT * 0.55, 0, CARD_HEIGHT);
-  gradient.addColorStop(0, "rgba(9, 20, 19, 0)");
-  gradient.addColorStop(1, "rgba(9, 20, 19, 0.92)");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, CARD_HEIGHT * 0.55, CARD_WIDTH, CARD_HEIGHT * 0.45);
-
-  const pad = 64;
-  ctx.textBaseline = "alphabetic";
-
-  ctx.fillStyle = "#4fb3ac";
-  ctx.font = "700 34px 'IBM Plex Sans Thai', sans-serif";
-  ctx.fillText("ตลาดท่านา · TALAT THA NA", pad, CARD_HEIGHT - 220);
-
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "700 68px 'IBM Plex Sans Thai', sans-serif";
-  ctx.fillText(`สำรวจครบ ${scannedCount}/${total} จุดแล้ว!`, pad, CARD_HEIGHT - 140);
-
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.font = "500 36px 'IBM Plex Sans Thai', sans-serif";
-  ctx.fillText("ภารกิจเดินสำรวจตลาดท่านา สำเร็จ 🎉", pad, CARD_HEIGHT - 80);
+  drawCover(ctx, img, CARD_SIZE);
+  ctx.drawImage(frame, 0, 0, CARD_SIZE, CARD_SIZE);
 
   return canvas.toDataURL("image/png");
 }
@@ -74,7 +69,7 @@ export function AchievementPhotoCard({ scannedCount, total }: { scannedCount: nu
   async function handleFile(file: File) {
     setBusy(true);
     try {
-      const dataUrl = await composite(file, scannedCount, total);
+      const dataUrl = await composite(file);
       setCardDataUrl(dataUrl);
     } catch {
       toast.error("สร้างรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
