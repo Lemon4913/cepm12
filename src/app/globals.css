@@ -158,3 +158,23 @@
     background: #fff;
   }
 }
+
+/* Market map plots (public/map/market-plan.svg, tagged with .market-plot by
+   the SVG cleanup script) — clickable, and visually distinct once an admin
+   has filled in a name/description/photo for that plot. */
+.market-plot {
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.market-plot:hover,
+.market-plot:focus-visible {
+  filter: brightness(1.15);
+  outline: none;
+}
+.market-plot[data-has-info="true"] {
+  stroke: var(--primary) !important;
+  stroke-width: 2.5px !important;
+}
+.market-map-svg svg {
+  display: block;
+}

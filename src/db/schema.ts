@@ -57,3 +57,19 @@ export const feedback = pgTable("feedback", {
   comment: text("comment"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * One row per clickable plot on the market map. `id` is the plot's stable
+ * `data-plot-id` from public/map/market-plan.svg (the shape's own SVG id) —
+ * not a generated key — so a row only exists once someone has actually filled
+ * it in. A plot with no row yet renders as an empty "no info" placeholder.
+ */
+export const stores = pgTable("stores", {
+  id: text("id").primaryKey(),
+  name: text("name"),
+  description: text("description"),
+  // Static paths/URLs, e.g. "/stores/<id>/1.jpg" — no upload pipeline yet,
+  // an admin has to place the file and paste the path in.
+  photoUrls: text("photo_urls").array().notNull().default([]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
