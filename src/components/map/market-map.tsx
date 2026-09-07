@@ -53,13 +53,29 @@ export function MarketMap({
   // library fixed initial values instead of trusting any of its centering.
   const [initialTransform, setInitialTransform] = useState<{ scale: number; x: number; y: number } | null>(null);
   useLayoutEffect(() => {
-    const el = outerRef.current;
-    if (!el) return;
-    const scale = Math.min(el.clientWidth / svgW, el.clientHeight / svgH);
-    if (!(scale > 0) || !Number.isFinite(scale)) return;
-    const x = (el.clientWidth - svgW * scale) / 2;
-    const y = (el.clientHeight - svgH * scale) / 2;
-    setInitialTransform({ scale, x, y });
+    const maybeEl = outerRef.current;
+    if (!maybeEl) return;
+    const el = maybeEl;
+
+    function tryFit(): boolean {
+      const scale = Math.min(el.clientWidth / svgW, el.clientHeight / svgH);
+      if (!(scale > 0) || !Number.isFinite(scale)) return false;
+      const x = (el.clientWidth - svgW * scale) / 2;
+      const y = (el.clientHeight - svgH * scale) / 2;
+      setInitialTransform({ scale, x, y });
+      return true;
+    }
+
+    // The container can measure 0x0 on the very first layout pass in some
+    // cases (e.g. dvh not resolved yet) — a one-shot measurement would then
+    // strand the map unsized forever. Fall back to watching for the first
+    // real size instead of just giving up.
+    if (tryFit()) return;
+    const observer = new ResizeObserver(() => {
+      if (tryFit()) observer.disconnect();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -179,10 +195,11 @@ export function MarketMap({
             // The library's default "smooth" wheel mode multiplies this step by
             // the wheel event's raw deltaY. A plain mouse fires one wheel event
             // per notch with deltaY ~100, so a step meant for "per notch" (e.g.
-            // 0.15) becomes a scale jump of ~15 — instantly past both zoom
+            // 0.4) becomes a scale jump of ~40 — instantly past both zoom
             // bounds. This step is calibrated for that multiplication instead,
-            // so a mouse notch moves the scale by a small, gradual amount.
-            wheel={{ step: 0.0015 }}
+            // so a mouse notch moves the scale by ~0.4 — brisk, but still
+            // gradual rather than snapping straight to min/max in one notch.
+            wheel={{ step: 0.004 }}
             doubleClick={{ mode: "zoomIn" }}
           >
             {/* contentClass deliberately left at its default (shrink-to-fit)

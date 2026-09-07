@@ -11,6 +11,7 @@ import { sendOtpEmail } from "@/lib/auth/email";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { createSession, deleteSession, getPendingAuth, setPendingAuth, clearPendingAuth } from "@/lib/auth/session";
 import { SignupSchema, LoginSchema, OtpSchema } from "@/lib/auth/schemas";
+import { isRateLimited } from "@/lib/rate-limit";
 
 export type AuthFormState = {
   error?: string;
@@ -54,6 +55,12 @@ async function issueOtp(userId: string, email: string): Promise<{ error?: string
 }
 
 export async function signup(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  // Unthrottled signup means one IP can create accounts (and trigger a Resend
+  // email each time) without limit — cheap to abuse, costly in email spend.
+  if (await isRateLimited("signup", 5, 10 * 60 * 1000)) {
+    return { error: "มีการสมัครสมาชิกบ่อยเกินไป กรุณาลองใหม่ในอีกสักครู่" };
+  }
+
   const parsed = SignupSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -93,6 +100,13 @@ export async function signup(_prevState: AuthFormState, formData: FormData): Pro
 }
 
 export async function login(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  // The per-account lockout below only protects one account at a time — one
+  // IP could still spray password guesses across many different emails
+  // without ever tripping it. This catches that.
+  if (await isRateLimited("login", 15, 10 * 60 * 1000)) {
+    return { error: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณาลองใหม่ในอีกสักครู่" };
+  }
+
   const parsed = LoginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -166,6 +180,12 @@ export async function verifyOtp(_prevState: AuthFormState, formData: FormData): 
 }
 
 export async function resendOtp(): Promise<AuthFormState> {
+  // The 30s-per-account cooldown in issueOtp() doesn't stop one IP from
+  // cycling through the resend button for many different pending accounts.
+  if (await isRateLimited("resend-otp", 8, 10 * 60 * 1000)) {
+    return { error: "ขอรหัสใหม่บ่อยเกินไป กรุณาลองใหม่ในอีกสักครู่" };
+  }
+
   const pending = await getPendingAuth();
   if (!pending) {
     redirect("/login");

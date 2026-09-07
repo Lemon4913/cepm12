@@ -5,6 +5,7 @@ import { avg, count, desc } from "drizzle-orm";
 import { db } from "@/db";
 import { feedback } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth/dal";
+import { isRateLimited } from "@/lib/rate-limit";
 
 const FeedbackSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5),
@@ -18,6 +19,12 @@ export async function submitFeedback(
   _prevState: FeedbackActionState,
   formData: FormData,
 ): Promise<FeedbackActionState> {
+  // Open to guests with no account tied to a submission, so an IP throttle is
+  // the only thing standing between this and unlimited spam.
+  if (await isRateLimited("feedback", 10, 60 * 60 * 1000)) {
+    return { error: "ส่งความคิดเห็นบ่อยเกินไป กรุณาลองใหม่ภายหลัง" };
+  }
+
   const parsed = FeedbackSchema.safeParse({
     rating: formData.get("rating"),
     comment: formData.get("comment"),
