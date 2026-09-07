@@ -178,3 +178,26 @@
 .market-map-svg svg {
   display: block;
 }
+
+/* Checkpoint pins drawn imperatively over the map (market-map.tsx) — a numbered
+   red badge, distinct from the plain store-plot shapes underneath. */
+.checkpoint-pin {
+  cursor: pointer;
+}
+.checkpoint-pin circle {
+  fill: var(--destructive);
+  stroke: #fff;
+  stroke-width: 1.4px;
+  transition: r 0.15s;
+}
+.checkpoint-pin text {
+  fill: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  pointer-events: none;
+  user-select: none;
+}
+.checkpoint-pin:hover circle,
+.checkpoint-pin:focus-visible circle {
+  r: 8;
+}

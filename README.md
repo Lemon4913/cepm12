@@ -77,8 +77,9 @@ To point at a managed Postgres instead of the local container (e.g. on a deploy 
 
 ## Project structure
 
-- Bottom tab bar (4 sections): Common Info (`/`), Map (`/map`, placeholder — pending a vector map from
-  the art team), QR Scan (`/scan`), Others (`/others`, project info + account links).
+- Bottom tab bar (4 sections): Common Info (`/`), Map (`/map`, an interactive pan/zoom site plan —
+  tap any plot to see its store name/photos/description), QR Scan (`/scan`), Others (`/others`,
+  project info + account links).
 - `/admin`, `/store`, `/account` are role-gated (see `src/lib/auth/dal.ts` and `src/proxy.ts`).
 - Font: IBM Plex Sans Thai (`next/font/google`). UI: shadcn/ui components in `src/components/ui`.
 

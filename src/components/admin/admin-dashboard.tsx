@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { AdminCheckpointTable } from "@/components/admin-checkpoint-table";
 import { AdminManagement } from "@/components/admin/admin-management";
+import { StoreRoleManagement } from "@/components/admin/store-role-management";
 import { PhotoThresholdForm } from "@/components/admin/photo-threshold-form";
 import { StatsOverview } from "@/components/admin/stats-overview";
 import { FeedbackSummaryView } from "@/components/admin/feedback-summary";
@@ -11,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
-import type { AdminUserSummary } from "@/app/actions/admin";
+import type { AdminUserSummary, StoreAccountSummary } from "@/app/actions/admin";
 import type { AdminStats } from "@/app/actions/stats";
 import type { FeedbackSummary } from "@/app/actions/feedback";
 
@@ -19,6 +20,7 @@ export function AdminDashboard({
   adminName,
   adminId,
   admins,
+  storeAccounts,
   photoThreshold,
   stats,
   feedbackSummary,
@@ -26,6 +28,7 @@ export function AdminDashboard({
   adminName: string;
   adminId: string;
   admins: AdminUserSummary[];
+  storeAccounts: StoreAccountSummary[];
   photoThreshold: number;
   stats: AdminStats | null;
   feedbackSummary: FeedbackSummary | null;
@@ -90,6 +93,18 @@ export function AdminDashboard({
           </CardHeader>
           <CardContent>
             <AdminManagement admins={admins} currentUserId={adminId} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">บัญชีร้านค้า</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              กำหนดบัญชีที่สมัครสมาชิกแล้วให้เป็นร้านค้า (และตั้ง/แก้ชื่อร้าน) หรือถอดสิทธิ์กลับเป็นนักท่องเที่ยว
+            </p>
+            <StoreRoleManagement stores={storeAccounts} />
           </CardContent>
         </Card>
 

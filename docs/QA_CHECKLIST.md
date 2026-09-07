@@ -22,7 +22,9 @@ testing with a session already cached.
 - [ ] Open the site in a private window. Bottom nav shows 4 tabs: ข้อมูลทั่วไป / แผนที่ / สแกน QR / อื่นๆ.
 - [ ] **ข้อมูลทั่วไป** (`/`): market history text renders, progress card shows `0 / 7 จุด` / `0%`, all 7
       checkpoints listed as "ยังไม่สแกน".
-- [ ] **แผนที่** (`/map`): shows the "กำลังจัดทำ" placeholder, no error.
+- [ ] **แผนที่** (`/map`): the market site plan renders full and correctly framed (not clipped or
+      tiny in a corner). Drag to pan, scroll wheel/pinch to zoom — smoothly, not jumping between only
+      a couple of zoom levels. Dragging while fully zoomed out never pushes the map off-screen.
 - [ ] **สแกน QR** (`/scan`): browser prompts for camera permission; after allowing, video feed appears.
       The "กล้องใช้งานไม่ได้?" manual-entry box is visible below it.
 - [ ] **อื่นๆ** (`/others`): shows project blurb, GitHub link (opens correct repo), "เข้าสู่ระบบ" and
@@ -100,7 +102,26 @@ testing with a session already cached.
       reload (persisted to the account, not just local UI state).
 - [ ] Progress card + checkpoint list here match what's shown on the Scan tab (same shared state).
 
-## 9. Cross-cutting
+## 9. Market map + achievement discovery
+
+- [ ] Tap an empty plot on `/map` → sheet shows "ยังไม่มีข้อมูลจุดนี้", no "แก้ไขข้อมูล" button for a
+      non-admin.
+- [ ] As **admin**: tap a plot → "เพิ่มข้อมูล" button appears. Fill in name/description/a photo
+      path → save → sheet now shows that info, and the plot gets a highlighted outline on the map.
+      Reload the page → the info and the outline both persist.
+- [ ] As admin, delete a plot's info ("ลบข้อมูลจุดนี้") → reverts to the empty placeholder, outline
+      goes away.
+- [ ] As a non-admin, confirm there is **no** way to edit a plot (no edit button, and the underlying
+      server action rejects a direct call if you're not an admin).
+- [ ] Reach the achievement-photo threshold, then open `/scan` → the big trophy banner is visible at
+      the top, above the camera view, and tapping it opens `/achievement`. Reload `/scan` → banner is
+      still there (unlike the one-time toast, which only fires once).
+- [ ] On `/achievement`, tap "ถ่ายรูป" → browser prompts for camera permission; once granted, a live
+      preview appears with the winner-frame artwork overlaid on top. Tap "ถ่ายภาพ" → the captured
+      result matches what the live preview showed (same framing). "ยกเลิก" backs out without
+      capturing. If camera access is denied, a "เลือกรูปภาพจากคลัง" fallback appears instead.
+
+## 10. Cross-cutting
 
 - [ ] **Theming**: toggle the OS/browser between light and dark mode — text stays legible, no
       invisible text or broken contrast in either mode.
