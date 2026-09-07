@@ -177,7 +177,10 @@ export function MarketMap({
 
   return (
     <>
-      <div ref={outerRef} className="relative h-[calc(100dvh-10.5rem)] w-full overflow-hidden rounded-lg border bg-muted">
+      <div
+        ref={outerRef}
+        className="relative h-[calc(100dvh-10.5rem)] w-full overflow-hidden rounded-lg border bg-muted md:h-[calc(100dvh-9rem)]"
+      >
         {initialTransform && (
           <TransformWrapper
             key={initialTransform.scale}

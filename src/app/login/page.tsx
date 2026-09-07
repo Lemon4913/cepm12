@@ -11,7 +11,7 @@ export default async function LoginPage() {
   return (
     <>
       <PageHeader title="เข้าสู่ระบบ" subtitle="สำหรับผู้ดูแลระบบ ร้านค้า และนักท่องเที่ยว" />
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <LoginForm />
         <p className="text-center text-sm text-muted-foreground">
           ยังไม่มีบัญชี?{" "}

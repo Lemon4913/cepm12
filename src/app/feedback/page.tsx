@@ -6,7 +6,7 @@ export default function FeedbackPage() {
   return (
     <>
       <PageHeader title="ให้คะแนนการใช้งาน" subtitle="ความคิดเห็นของคุณช่วยให้เราปรับปรุงเว็บแอปนี้ได้ดีขึ้น" />
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <Card>
           <CardContent className="pt-6">
             <FeedbackForm />

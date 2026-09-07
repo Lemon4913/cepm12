@@ -37,11 +37,16 @@ export function AdminDashboard({
 
   return (
     <>
-      <PageHeader title="ผู้ดูแลระบบ" subtitle={`เข้าสู่ระบบในชื่อ ${adminName}`} />
+      <PageHeader title="ผู้ดูแลระบบ" subtitle={`เข้าสู่ระบบในชื่อ ${adminName}`} wide />
 
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      {/* Below md: same stacked single column as every other page. At md+:
+          a 2-column grid — this is the one page with enough distinct cards
+          (checkpoints, admins, stores, stats...) that a wide single column
+          would just mean very long, very short lines of content. items-start
+          keeps shorter cards from stretching to match a taller neighbor. */}
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-5xl md:grid md:grid-cols-2 md:items-start md:gap-5 md:p-6">
         {stats ? (
-          <Card>
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle className="text-base">ภาพรวม</CardTitle>
             </CardHeader>
@@ -128,7 +133,9 @@ export function AdminDashboard({
           </CardContent>
         </Card>
 
-        <LogoutButton />
+        <div className="md:col-span-2">
+          <LogoutButton />
+        </div>
       </main>
     </>
   );

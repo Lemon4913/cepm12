@@ -55,7 +55,7 @@ export default function ScanPage() {
     <>
       <PageHeader title="สแกน QR Code" subtitle="ส่องกล้องไปที่ QR Code ประจำจุดเช็คอิน" />
 
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <TrophyBanner />
 
         <QrCodeScanner onDecode={handleDecode} paused={paused} />

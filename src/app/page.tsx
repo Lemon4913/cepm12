@@ -8,7 +8,7 @@ export default function HomePage() {
     <>
       <PageHeader title="ตลาดท่านา" subtitle="Talat Tha Na Market · นครไชยศรี นครปฐม" />
 
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <ProgressSummaryCard />
 
         <Card>

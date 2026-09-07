@@ -11,7 +11,7 @@ export default async function SignupPage() {
   return (
     <>
       <PageHeader title="สมัครสมาชิก" subtitle="สร้างบัญชีเพื่อบันทึกความคืบหน้าและรับข่าวสาร" />
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <SignupForm />
         <p className="text-center text-sm text-muted-foreground">
           มีบัญชีอยู่แล้ว?{" "}

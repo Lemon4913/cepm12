@@ -23,9 +23,9 @@ export default async function MapPage() {
 
   return (
     <>
-      <PageHeader title="แผนที่ตลาดท่านา" subtitle="Talat Tha Na Map" />
+      <PageHeader title="แผนที่ตลาดท่านา" subtitle="Talat Tha Na Map" wide />
 
-      <main className="flex flex-1 flex-col gap-3 p-4">
+      <main className="flex flex-1 flex-col gap-3 p-4 md:mx-auto md:w-full md:max-w-5xl md:gap-4 md:p-6">
         <MarketMap svgMarkup={svgMarkup} stores={stores} isAdmin={isAdmin} />
       </main>
     </>

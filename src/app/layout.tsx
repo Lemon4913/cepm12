@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
+import { SidebarNav } from "@/components/sidebar-nav";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { AchievementWatcher } from "@/components/achievement/achievement-watcher";
+import { getCurrentUser } from "@/lib/auth/dal";
 
 const ibmPlexSansThai = IBM_Plex_Sans_Thai({
   variable: "--font-sans",
@@ -35,17 +37,27 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getCurrentUser();
+
   return (
     <html
       lang="th"
       className={`${ibmPlexSansThai.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20 sm:max-w-lg">
-            {children}
+          {/* Below md: the original single mobile column with a bottom tab
+              bar. At md+: a persistent sidebar replaces the bottom bar, and
+              the column stops being pinned to a phone-width strip in the
+              middle of the screen — individual pages opt into how much of
+              the remaining width they use (see PageHeader's `wide` prop). */}
+          <div className="flex min-h-dvh flex-col md:flex-row">
+            <SidebarNav user={user} />
+            <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20 sm:max-w-lg md:max-w-none md:pb-0">
+              {children}
+            </div>
           </div>
           <BottomNav />
           <Toaster position="top-center" />

@@ -27,7 +27,7 @@ export default function AchievementPage() {
     <>
       <PageHeader title="รูปภาพความสำเร็จ" subtitle="ถ่ายรูปเก็บความทรงจำเมื่อสำรวจตลาดท่านาครบตามเป้า" />
 
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         {loadFailed ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-2 py-12 text-center">

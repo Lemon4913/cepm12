@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <>
       <PageHeader title="ไม่พบหน้านี้" subtitle="404" />
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
             <Compass className="size-10 text-muted-foreground" />

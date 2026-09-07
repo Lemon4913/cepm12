@@ -17,7 +17,7 @@ export default async function Verify2faPage() {
   return (
     <>
       <PageHeader title="ยืนยันตัวตน" subtitle={`เราส่งรหัส 6 หลักไปที่ ${user.email}`} />
-      <main className="flex flex-1 flex-col gap-4 p-4">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <OtpForm />
       </main>
     </>
