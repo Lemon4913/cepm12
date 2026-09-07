@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { toast } from "sonner";
 import { ImageOff, Pencil, Trash2, CheckCircle2 } from "lucide-react";
@@ -30,14 +30,42 @@ export function MarketMap({
   isAdmin: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
   const [storesState, setStoresState] = useState<StoreMap>(stores);
   const [selectedPlotId, setSelectedPlotId] = useState<string | null>(null);
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const { isScanned } = useCheckpointProgress();
 
+  // The map's own intrinsic size, read straight out of the markup string —
+  // known synchronously, unlike measuring the injected DOM after mount.
+  const [svgW, svgH] = (() => {
+    const w = svgMarkup.match(/<svg[^>]*\swidth="([\d.]+)"/)?.[1];
+    const h = svgMarkup.match(/<svg[^>]*\sheight="([\d.]+)"/)?.[1];
+    return [w ? Number(w) : 256, h ? Number(h) : 256];
+  })();
+
+  // react-zoom-pan-pinch's own centering (fitOnInit, centerView, and
+  // centerOnInit + initialScale all funnel into the same internal formula)
+  // produces a wildly wrong offset for this content — reproduced with every
+  // one of those APIs during development, so it isn't a timing fluke. Compute
+  // both the fit scale AND the centered position ourselves and hand the
+  // library fixed initial values instead of trusting any of its centering.
+  const [initialTransform, setInitialTransform] = useState<{ scale: number; x: number; y: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+    const scale = Math.min(el.clientWidth / svgW, el.clientHeight / svgH);
+    if (!(scale > 0) || !Number.isFinite(scale)) return;
+    const x = (el.clientWidth - svgW * scale) / 2;
+    const y = (el.clientHeight - svgH * scale) / 2;
+    setInitialTransform({ scale, x, y });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Mark plots that already have a name so they stand out on the map — see
-  // .market-plot[data-has-info] in globals.css.
+  // .market-plot[data-has-info] in globals.css. Also re-runs once
+  // initialTransform resolves, since the container only mounts then.
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
@@ -45,7 +73,7 @@ export function MarketMap({
       const id = el.getAttribute("data-plot-id");
       el.setAttribute("data-has-info", id && storesState[id]?.name ? "true" : "false");
     });
-  }, [storesState]);
+  }, [storesState, initialTransform]);
 
   // Draw the checkpoint pins once, as real children of the injected <svg> (not a
   // separate overlay) so they pan/zoom in lockstep with the map for free, and
@@ -78,7 +106,7 @@ export function MarketMap({
     }
     svg.appendChild(g);
     return () => g.remove();
-  }, []);
+  }, [initialTransform]);
 
   useEffect(() => {
     const root = containerRef.current;
@@ -99,7 +127,7 @@ export function MarketMap({
     }
     root.addEventListener("click", onClick);
     return () => root.removeEventListener("click", onClick);
-  }, []);
+  }, [initialTransform]);
 
   const selectedStore = selectedPlotId ? storesState[selectedPlotId] : undefined;
   const selectedCheckpoint = selectedCheckpointId
@@ -133,31 +161,39 @@ export function MarketMap({
 
   return (
     <>
-      <div className="relative h-[calc(100dvh-10.5rem)] w-full overflow-hidden rounded-lg border bg-muted">
-        <TransformWrapper
-          minScale={0.8}
-          maxScale={8}
-          centerOnInit
-          fitOnInit="contain"
-          // Default bounds let you drag the map fully off-screen once it's
-          // zoomed out smaller than the viewport (its whole allowed pan slack
-          // equals how much smaller it is) — that's the "boundary too far
-          // away, lost the map" bug. This halves that slack so some part of
-          // the map always stays on screen no matter how far you pan.
-          centerZoomedOut
-          // The library's default "smooth" wheel mode multiplies this step by
-          // the wheel event's raw deltaY. A plain mouse fires one wheel event
-          // per notch with deltaY ~100, so a step meant for "per notch" (e.g.
-          // 0.15) becomes a scale jump of ~15 — instantly past both zoom
-          // bounds. This step is calibrated for that multiplication instead,
-          // so a mouse notch moves the scale by a small, gradual amount.
-          wheel={{ step: 0.0015 }}
-          doubleClick={{ mode: "zoomIn" }}
-        >
-          <TransformComponent wrapperClass="!h-full !w-full" contentClass="!h-full !w-full">
-            <div ref={containerRef} className="market-map-svg" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
-          </TransformComponent>
-        </TransformWrapper>
+      <div ref={outerRef} className="relative h-[calc(100dvh-10.5rem)] w-full overflow-hidden rounded-lg border bg-muted">
+        {initialTransform && (
+          <TransformWrapper
+            key={initialTransform.scale}
+            initialScale={initialTransform.scale}
+            initialPositionX={initialTransform.x}
+            initialPositionY={initialTransform.y}
+            minScale={initialTransform.scale}
+            maxScale={8}
+            // Default bounds let you drag the map fully off-screen once it's
+            // zoomed out smaller than the viewport (its whole allowed pan slack
+            // equals how much smaller it is) — that's the "boundary too far
+            // away, lost the map" bug. This halves that slack so some part of
+            // the map always stays on screen no matter how far you pan.
+            centerZoomedOut
+            // The library's default "smooth" wheel mode multiplies this step by
+            // the wheel event's raw deltaY. A plain mouse fires one wheel event
+            // per notch with deltaY ~100, so a step meant for "per notch" (e.g.
+            // 0.15) becomes a scale jump of ~15 — instantly past both zoom
+            // bounds. This step is calibrated for that multiplication instead,
+            // so a mouse notch moves the scale by a small, gradual amount.
+            wheel={{ step: 0.0015 }}
+            doubleClick={{ mode: "zoomIn" }}
+          >
+            {/* contentClass deliberately left at its default (shrink-to-fit)
+                size, not stretched to the wrapper — our initialScale/position
+                math above assumes content is the SVG's true intrinsic size
+                (212x125-ish), not the wrapper's size stretched over it. */}
+            <TransformComponent wrapperClass="!h-full !w-full">
+              <div ref={containerRef} className="market-map-svg" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+            </TransformComponent>
+          </TransformWrapper>
+        )}
         <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 text-center text-xs text-muted-foreground shadow">
           ลากเพื่อเลื่อน · บีบนิ้ว/เลื่อนล้อเมาส์เพื่อซูม · แตะจุดเพื่อดูข้อมูลร้านค้า
         </p>
