@@ -3,13 +3,21 @@
 import { useActionState, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { toast } from "sonner";
-import { ImageOff, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { ImageOff, Pencil, Trash2, CheckCircle2, Upload, X, Users } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { upsertStore, clearStore, type StoreInfo, type StoreActionState } from "@/app/actions/stores";
+import {
+  upsertStore,
+  clearStore,
+  applyPendingStorePhotos,
+  setEditingPresence,
+  type StoreInfo,
+  type StoreActionState,
+} from "@/app/actions/stores";
+import { uploadStorePhoto, deleteStorePhoto } from "@/app/actions/store-photos";
 import { checkpoints } from "@/lib/checkpoints";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 import { pendingStores } from "@/lib/pending-stores";
@@ -18,7 +26,10 @@ const initialActionState: StoreActionState = null;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 type StoreMap = Record<string, StoreInfo>;
-type SavedFields = { name: string; description: string; photoUrls: string[] };
+type SavedFields = { name: string; description: string };
+type StoreEventPayload =
+  | { type: "store"; plotId: string; info: Omit<StoreInfo, "id"> | null }
+  | { type: "editing"; plotId: string; clientId: string; editing: boolean };
 
 export function MarketMap({
   svgMarkup,
@@ -35,7 +46,13 @@ export function MarketMap({
   const [selectedPlotId, setSelectedPlotId] = useState<string | null>(null);
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [editingByOthers, setEditingByOthers] = useState<Record<string, boolean>>({});
   const { isScanned } = useCheckpointProgress();
+
+  // Per-tab id so this client can tell "someone else is editing" apart from
+  // "I'm the one editing" when its own presence broadcast echoes back.
+  const clientIdRef = useRef<string | null>(null);
+  if (clientIdRef.current == null) clientIdRef.current = crypto.randomUUID();
 
   // The map's own intrinsic size, read straight out of the markup string —
   // known synchronously, unlike measuring the injected DOM after mount.
@@ -79,17 +96,65 @@ export function MarketMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Mark plots that already have a name so they stand out on the map — see
-  // .market-plot[data-has-info] in globals.css. Also re-runs once
-  // initialTransform resolves, since the container only mounts then.
+  // Live sync: every admin's save/delete/upload broadcasts over SSE, so every
+  // open map (including the browsing public) picks it up without a reload —
+  // the actual fix for "my friends fill this in fast, I'm worried about
+  // duplicate work": nobody is ever looking at data that's already stale by
+  // the time they act on it.
+  useEffect(() => {
+    const source = new EventSource("/api/store-events");
+
+    function onStore(e: MessageEvent) {
+      const payload = JSON.parse(e.data) as Extract<StoreEventPayload, { type: "store" }>;
+      setStoresState((prev) => {
+        if (!payload.info) {
+          if (!(payload.plotId in prev)) return prev;
+          const next = { ...prev };
+          delete next[payload.plotId];
+          return next;
+        }
+        return { ...prev, [payload.plotId]: { id: payload.plotId, ...payload.info } };
+      });
+    }
+
+    function onEditing(e: MessageEvent) {
+      const payload = JSON.parse(e.data) as Extract<StoreEventPayload, { type: "editing" }>;
+      if (payload.clientId === clientIdRef.current) return;
+      setEditingByOthers((prev) => ({ ...prev, [payload.plotId]: payload.editing }));
+    }
+
+    source.addEventListener("store", onStore);
+    source.addEventListener("editing", onEditing);
+    return () => source.close();
+  }, []);
+
+  // Broadcast "I'm editing this plot" for as long as the edit form for it is
+  // open — covers close/cancel/save/switch-plot/unmount uniformly, since all
+  // of those either change editing/selectedPlotId or unmount the component.
+  useEffect(() => {
+    if (!isAdmin || !editing || !selectedPlotId) return;
+    const plotId = selectedPlotId;
+    const clientId = clientIdRef.current!;
+    setEditingPresence(plotId, clientId, true);
+    return () => {
+      setEditingPresence(plotId, clientId, false);
+    };
+  }, [isAdmin, editing, selectedPlotId]);
+
+  // Mark plots that already have a name so they stand out on the map, and
+  // (admin only) pulse the ones that don't — see .market-plot[data-has-info]
+  // / [data-needs-info] in globals.css. Also re-runs once initialTransform
+  // resolves, since the container only mounts then.
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
     root.querySelectorAll<SVGElement>("[data-plot-id]").forEach((el) => {
       const id = el.getAttribute("data-plot-id");
-      el.setAttribute("data-has-info", id && storesState[id]?.name ? "true" : "false");
+      const hasInfo = !!(id && storesState[id]?.name);
+      el.setAttribute("data-has-info", hasInfo ? "true" : "false");
+      el.setAttribute("data-needs-info", isAdmin && !hasInfo ? "true" : "false");
     });
-  }, [storesState, initialTransform]);
+  }, [storesState, initialTransform, isAdmin]);
 
   // Draw the checkpoint pins once, as real children of the injected <svg> (not a
   // separate overlay) so they pan/zoom in lockstep with the map for free, and
@@ -161,7 +226,12 @@ export function MarketMap({
   function handleSaved(plotId: string, data: SavedFields) {
     setStoresState((prev) => ({
       ...prev,
-      [plotId]: { id: plotId, name: data.name || null, description: data.description || null, photoUrls: data.photoUrls },
+      [plotId]: {
+        id: plotId,
+        name: data.name || null,
+        description: data.description || null,
+        photoUrls: prev[plotId]?.photoUrls ?? [],
+      },
     }));
     setEditing(false);
   }
@@ -173,6 +243,22 @@ export function MarketMap({
       return next;
     });
     setSelectedPlotId(null);
+  }
+
+  function handlePhotoAdded(plotId: string, url: string) {
+    setStoresState((prev) => {
+      const existing = prev[plotId] ?? { id: plotId, name: null, description: null, photoUrls: [] };
+      if (existing.photoUrls.includes(url)) return prev;
+      return { ...prev, [plotId]: { ...existing, photoUrls: [...existing.photoUrls, url] } };
+    });
+  }
+
+  function handlePhotoRemoved(plotId: string, url: string) {
+    setStoresState((prev) => {
+      const existing = prev[plotId];
+      if (!existing) return prev;
+      return { ...prev, [plotId]: { ...existing, photoUrls: existing.photoUrls.filter((u) => u !== url) } };
+    });
   }
 
   return (
@@ -215,7 +301,9 @@ export function MarketMap({
           </TransformWrapper>
         )}
         <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 text-center text-xs text-muted-foreground shadow">
-          ลากเพื่อเลื่อน · บีบนิ้ว/เลื่อนล้อเมาส์เพื่อซูม · แตะจุดเพื่อดูข้อมูลร้านค้า
+          {isAdmin
+            ? "ลากเพื่อเลื่อน · ซูมด้วยล้อเมาส์ · จุดเขียวกะพริบ = ยังไม่มีข้อมูล"
+            : "ลากเพื่อเลื่อน · บีบนิ้ว/เลื่อนล้อเมาส์เพื่อซูม · แตะจุดเพื่อดูข้อมูลร้านค้า"}
         </p>
       </div>
 
@@ -227,9 +315,12 @@ export function MarketMap({
               <StoreEditForm
                 plotId={selectedPlotId}
                 store={selectedStore}
+                isEditedByOther={!!editingByOthers[selectedPlotId]}
                 onSaved={(data) => handleSaved(selectedPlotId, data)}
                 onCancel={() => setEditing(false)}
                 onCleared={() => handleCleared(selectedPlotId)}
+                onPhotoAdded={(url) => handlePhotoAdded(selectedPlotId, url)}
+                onPhotoRemoved={(url) => handlePhotoRemoved(selectedPlotId, url)}
               />
             ) : (
               <StoreDetail store={selectedStore} isAdmin={isAdmin} onEdit={() => setEditing(true)} />
@@ -321,41 +412,46 @@ function StoreDetail({
 function StoreEditForm({
   plotId,
   store,
+  isEditedByOther,
   onSaved,
   onCancel,
   onCleared,
+  onPhotoAdded,
+  onPhotoRemoved,
 }: {
   plotId: string;
   store: StoreInfo | undefined;
+  isEditedByOther: boolean;
   onSaved: (data: SavedFields) => void;
   onCancel: () => void;
   onCleared: () => void;
+  onPhotoAdded: (url: string) => void;
+  onPhotoRemoved: (url: string) => void;
 }) {
-  const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, pending] = useActionState(upsertStore, initialActionState);
   const [clearing, setClearing] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [name, setName] = useState(store?.name ?? "");
   const [description, setDescription] = useState(store?.description ?? "");
-  const [photoUrls, setPhotoUrls] = useState(store?.photoUrls.join("\n") ?? "");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoUrls = store?.photoUrls ?? [];
 
   function handlePickPending(slug: string) {
     const picked = pendingStores.find((p) => p.slug === slug);
     if (!picked) return;
     setName(picked.name);
     setDescription(picked.description ?? "");
-    setPhotoUrls(picked.photoUrls.join("\n"));
+    if (picked.photoUrls.length > 0) {
+      applyPendingStorePhotos(plotId, picked.photoUrls).then((result) => {
+        if (result?.error) toast.error(result.error);
+        else picked.photoUrls.forEach(onPhotoAdded);
+      });
+    }
   }
 
   useEffect(() => {
     if (state?.success) {
-      onSaved({
-        name,
-        description,
-        photoUrls: photoUrls
-          .split("\n")
-          .map((line) => line.trim())
-          .filter(Boolean),
-      });
+      onSaved({ name, description });
       toast.success(state.success);
     } else if (state?.error) {
       toast.error(state.error);
@@ -375,12 +471,39 @@ function StoreEditForm({
     }
   }
 
+  async function handleFilesSelected(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    for (const file of Array.from(files)) {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadStorePhoto(plotId, formData);
+      if (result?.error) toast.error(result.error);
+      else if (result?.url) onPhotoAdded(result.url);
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleRemovePhoto(url: string) {
+    onPhotoRemoved(url); // optimistic — deleteStorePhoto below is the source of truth others will see via SSE
+    const result = await deleteStorePhoto(plotId, url);
+    if (result?.error) toast.error(result.error);
+  }
+
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-3 px-4 pb-4">
+    <form action={formAction} className="flex flex-col gap-3 px-4 pb-4">
       <SheetHeader className="px-0">
         <SheetTitle>{store?.name ? "แก้ไขข้อมูลร้านค้า" : "เพิ่มข้อมูลร้านค้า"}</SheetTitle>
       </SheetHeader>
       <input type="hidden" name="plotId" value={plotId} />
+
+      {isEditedByOther && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-400">
+          <Users className="size-4 shrink-0" />
+          มีผู้ดูแลระบบอีกคนกำลังแก้ไขจุดนี้อยู่ตอนนี้ — คุยกันก่อนบันทึกเพื่อไม่ให้ข้อมูลทับกัน
+        </div>
+      )}
 
       {pendingStores.length > 0 && (
         <div className="flex flex-col gap-1.5">
@@ -401,8 +524,8 @@ function StoreEditForm({
             ))}
           </select>
           <p className="text-xs text-muted-foreground">
-            กรอกข้อมูลไว้แล้วแต่ยังไม่รู้ว่าเป็นจุดไหนบนแผนที่ — เลือกร้านที่ตรงกับจุดนี้ แล้วกด &quot;บันทึก&quot;
-            ด้านล่าง ระบบจะกรอกชื่อ/รายละเอียด/รูปให้อัตโนมัติ (ยังแก้ไขเพิ่มเติมได้ก่อนบันทึก)
+            กรอกข้อมูลไว้แล้วแต่ยังไม่รู้ว่าเป็นจุดไหนบนแผนที่ — เลือกร้านที่ตรงกับจุดนี้ ระบบจะกรอกชื่อ/รายละเอียด/รูปให้ทันที
+            (รูปภาพเพิ่มเข้าไปเลย ยังแก้ไขชื่อ/รายละเอียดก่อนกด &quot;บันทึก&quot; ได้)
           </p>
         </div>
       )}
@@ -425,14 +548,39 @@ function StoreEditForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="store-photos">รูปภาพ (ลิงก์/พาธ บรรทัดละ 1 รูป)</Label>
-        <Textarea
-          id="store-photos"
-          name="photoUrls"
-          value={photoUrls}
-          onChange={(e) => setPhotoUrls(e.target.value)}
-          rows={3}
-          placeholder={`/stores/${plotId}/1.jpg`}
+        <Label>รูปภาพ</Label>
+        <div className="flex flex-wrap gap-2">
+          {photoUrls.map((url) => (
+            <div key={url} className="group relative size-20 shrink-0 overflow-hidden rounded-lg border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="size-full object-cover" />
+              <button
+                type="button"
+                onClick={() => handleRemovePhoto(url)}
+                aria-label="ลบรูปนี้"
+                className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-lg border border-dashed text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            <Upload className="size-4" />
+            <span className="text-center text-[10px] leading-tight">{uploading ? "กำลังอัปโหลด…" : "อัปโหลดรูป"}</span>
+          </button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => handleFilesSelected(e.target.files)}
         />
       </div>
 

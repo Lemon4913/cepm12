@@ -175,6 +175,33 @@
   stroke: var(--primary) !important;
   stroke-width: 2.5px !important;
 }
+/* Admin-only (see market-map.tsx — only set when isAdmin) — a gentle pulse on
+   every plot still missing info, so a teammate can spot at a glance what's
+   left to fill in instead of clicking through all ~80 plots one by one. */
+@keyframes needs-info-pulse {
+  0%,
+  100% {
+    stroke: #22c55e;
+    stroke-width: 2px;
+    stroke-opacity: 0.55;
+  }
+  50% {
+    stroke: #22c55e;
+    stroke-width: 3px;
+    stroke-opacity: 1;
+  }
+}
+.market-plot[data-needs-info="true"] {
+  animation: needs-info-pulse 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .market-plot[data-needs-info="true"] {
+    animation: none;
+    stroke: #22c55e !important;
+    stroke-width: 2px !important;
+    stroke-opacity: 0.85;
+  }
+}
 .market-map-svg svg {
   display: block;
 }

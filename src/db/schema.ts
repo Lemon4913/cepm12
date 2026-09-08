@@ -68,8 +68,26 @@ export const stores = pgTable("stores", {
   id: text("id").primaryKey(),
   name: text("name"),
   description: text("description"),
-  // Static paths/URLs, e.g. "/stores/<id>/1.jpg" — no upload pipeline yet,
-  // an admin has to place the file and paste the path in.
+  // Each entry is either a plain static path (e.g. a pending-store's
+  // /pending-stores/<slug>/1.jpg, checked into the repo) or "/api/store-photos/<id>"
+  // pointing at a row in storePhotos below — both are just strings an <img> can load.
   photoUrls: text("photo_urls").array().notNull().default([]),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Uploaded store photos, stored as base64 in Postgres rather than on disk —
+ * this app's only deploy target (Railway) doesn't guarantee a persistent,
+ * publicly-servable filesystem path across deploys, and adding real object
+ * storage (S3-compatible bucket + credentials) is more infra than this
+ * project's scale justifies. Images are resized/compressed with sharp before
+ * storing (see src/app/actions/store-photos.ts) to keep row size reasonable.
+ * Served back out by src/app/api/store-photos/[id]/route.ts.
+ */
+export const storePhotos = pgTable("store_photos", {
+  id: text("id").primaryKey(),
+  storeId: text("store_id").notNull(),
+  data: text("data").notNull(),
+  contentType: text("content_type").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
