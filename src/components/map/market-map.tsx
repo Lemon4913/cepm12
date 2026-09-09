@@ -52,6 +52,10 @@ export function MarketMap({
   // actually wants to go hunt for empty plots to fill in.
   const [showNeedsInfo, setShowNeedsInfo] = useState(false);
   const { isScanned } = useCheckpointProgress();
+  // Current pan/zoom scale, used to counter-scale the checkpoint pins so they
+  // stay the same on-screen size at any zoom level (see the pin effect below)
+  // instead of ballooning over the buildings the further in you zoom.
+  const [zoomScale, setZoomScale] = useState(1);
 
   // Per-tab id so this client can tell "someone else is editing" apart from
   // "I'm the one editing" when its own presence broadcast echoes back.
@@ -84,6 +88,7 @@ export function MarketMap({
       const x = (el.clientWidth - svgW * scale) / 2;
       const y = (el.clientHeight - svgH * scale) / 2;
       setInitialTransform({ scale, x, y });
+      setZoomScale(scale);
       return true;
     }
 
@@ -170,49 +175,86 @@ export function MarketMap({
 
     // Round-head map-pin shape: the group's own (0,0) — where it's translated
     // to — is the pin's TIP, sitting exactly on the checkpoint's true map
-    // location. The round head (with the number) floats above that point on a
+    // location. The round head (with the number) floats off that point on a
     // thin tail, so only a sliver of the pin actually touches the building
     // underneath instead of a flat circle sitting right on top of it.
+    //
+    // Which direction the head leans is per-checkpoint (headAngle, degrees
+    // clockwise from straight up) — some checkpoints sit in tight clusters of
+    // small plots where "straight up" still lands the head on a building;
+    // see checkpoints.ts.
     const HEAD_R = 5;
     const TAIL_LEN = 4;
-    const headCenterY = -(HEAD_R + TAIL_LEN);
-    const tailBaseY = -TAIL_LEN + 1.5; // slight overlap into the head, hides the seam
     const tailHalfWidth = HEAD_R * 0.45;
 
     const g = document.createElementNS(SVG_NS, "g");
     g.setAttribute("class", "checkpoint-pins");
     for (const cp of checkpoints) {
+      const angleRad = ((cp.headAngle ?? 0) * Math.PI) / 180;
+      const dx = Math.sin(angleRad);
+      const dy = -Math.cos(angleRad);
+      const px = -dy;
+      const py = dx;
+      const headDist = HEAD_R + TAIL_LEN;
+      const headCx = dx * headDist;
+      const headCy = dy * headDist;
+      const tailBaseDist = TAIL_LEN - 1.5; // slight overlap into the head, hides the seam
+      const tailBaseX = dx * tailBaseDist;
+      const tailBaseY = dy * tailBaseDist;
+
       const pin = document.createElementNS(SVG_NS, "g");
       pin.setAttribute("data-checkpoint-id", cp.id);
       pin.setAttribute("class", "checkpoint-pin");
       pin.setAttribute("transform", `translate(${cp.mapX}, ${cp.mapY})`);
 
+      // Counter-scaled inner group — see the zoomScale effect below, which
+      // keeps this group's scale at initialScale/currentScale so the pin
+      // renders at a constant on-screen size no matter how far you zoom in.
+      const scaleGroup = document.createElementNS(SVG_NS, "g");
+      scaleGroup.setAttribute("class", "checkpoint-pin-scale");
+      pin.appendChild(scaleGroup);
+
       const tail = document.createElementNS(SVG_NS, "path");
       tail.setAttribute("class", "checkpoint-pin-tail");
       tail.setAttribute(
         "d",
-        `M 0 0 L ${-tailHalfWidth} ${tailBaseY} L ${tailHalfWidth} ${tailBaseY} Z`,
+        `M 0 0 L ${tailBaseX + px * tailHalfWidth} ${tailBaseY + py * tailHalfWidth} L ${tailBaseX - px * tailHalfWidth} ${tailBaseY - py * tailHalfWidth} Z`,
       );
-      pin.appendChild(tail);
+      scaleGroup.appendChild(tail);
 
       const circle = document.createElementNS(SVG_NS, "circle");
       circle.setAttribute("class", "checkpoint-pin-head");
-      circle.setAttribute("cy", String(headCenterY));
+      circle.setAttribute("cx", String(headCx));
+      circle.setAttribute("cy", String(headCy));
       circle.setAttribute("r", String(HEAD_R));
-      pin.appendChild(circle);
+      scaleGroup.appendChild(circle);
 
       const label = document.createElementNS(SVG_NS, "text");
       label.setAttribute("text-anchor", "middle");
       label.setAttribute("dominant-baseline", "central");
-      label.setAttribute("y", String(headCenterY + 0.5));
+      label.setAttribute("x", String(headCx));
+      label.setAttribute("y", String(headCy + 0.5));
       label.textContent = String(cp.order);
-      pin.appendChild(label);
+      scaleGroup.appendChild(label);
 
       g.appendChild(pin);
     }
     svg.appendChild(g);
     return () => g.remove();
   }, [initialTransform]);
+
+  // Keep each pin's counter-scale group at initialScale/currentScale so the
+  // pin's on-screen size stays constant as the user zooms — lets people zoom
+  // in past a pin to click the (now much bigger) building precisely instead
+  // of the pin also ballooning and covering more of it.
+  useEffect(() => {
+    const root = containerRef.current;
+    if (!root || !initialTransform) return;
+    const ratio = initialTransform.scale / zoomScale;
+    root.querySelectorAll<SVGGElement>(".checkpoint-pin-scale").forEach((el) => {
+      el.setAttribute("transform", `scale(${ratio})`);
+    });
+  }, [zoomScale, initialTransform]);
 
   useEffect(() => {
     const root = containerRef.current;
@@ -315,6 +357,7 @@ export function MarketMap({
             // gradual rather than snapping straight to min/max in one notch.
             wheel={{ step: 0.004 }}
             doubleClick={{ mode: "zoomIn" }}
+            onTransform={(_ref, state) => setZoomScale(state.scale)}
           >
             {/* contentClass deliberately left at its default (shrink-to-fit)
                 size, not stretched to the wrapper — our initialScale/position

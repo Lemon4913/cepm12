@@ -15,6 +15,16 @@ export type Checkpoint = {
    */
   mapX: number;
   mapY: number;
+  /**
+   * Cosmetic-only lean for the pin's round head, in degrees clockwise from
+   * straight up (0 = default, straight up). The pin's tail always points at
+   * the exact mapX/mapY location above — this only rotates which direction
+   * the head floats off to, for checkpoints where "straight up" still lands
+   * the head on top of a building. Chosen per-checkpoint by sampling which
+   * direction around each pin is clearest of .market-plot/.market-zone shapes
+   * in the actual rendered map (see market-map.tsx's checkpoint-pin effect).
+   */
+  headAngle?: number;
 };
 
 // Real check-in points, per "ตำแหน่งติดตั้งป้ายจุด check-in" (site survey PDF from the art/install team).
@@ -38,6 +48,7 @@ export const checkpoints: Checkpoint[] = [
     qrValue: "067254",
     mapX: 140,
     mapY: 160,
+    headAngle: 205,
   },
   {
     id: "cp-03",
@@ -48,6 +59,7 @@ export const checkpoints: Checkpoint[] = [
     qrValue: "739481",
     mapX: 149.35,
     mapY: 140.73,
+    headAngle: 302,
   },
   {
     id: "cp-04",
@@ -58,6 +70,7 @@ export const checkpoints: Checkpoint[] = [
     qrValue: "215608",
     mapX: 110.37,
     mapY: 84.62,
+    headAngle: 187,
   },
   {
     id: "cp-05",
@@ -88,6 +101,7 @@ export const checkpoints: Checkpoint[] = [
     qrValue: "671845",
     mapX: 22.81,
     mapY: 147.17,
+    headAngle: 230,
   },
 ];
 
