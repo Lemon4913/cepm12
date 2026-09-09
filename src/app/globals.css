@@ -202,19 +202,35 @@
     stroke-opacity: 0.85;
   }
 }
+/* Zone/roof background shapes (public/map/market-plan.svg, tagged .market-zone
+   by the same SVG) — the large colored polygon under each cluster of store
+   plots, purely decorative. Not a store: no pointer, no click, no pulse. */
+.market-zone {
+  pointer-events: none;
+}
+
 .market-map-svg svg {
   display: block;
 }
 
 /* Checkpoint pins drawn imperatively over the map (market-map.tsx) — a numbered
-   red badge, distinct from the plain store-plot shapes underneath. */
+   round-head map pin, distinct from the plain store-plot shapes underneath.
+   The group's local origin is the pin's TIP (the actual checkpoint location);
+   the head + tail float above it so only a thin sliver touches the building
+   below instead of a flat circle sitting right on top of it. */
 .checkpoint-pin {
   cursor: pointer;
 }
-.checkpoint-pin circle {
+.checkpoint-pin-tail,
+.checkpoint-pin-head {
   fill: var(--destructive);
   stroke: #fff;
-  stroke-width: 1.4px;
+  stroke-width: 1.2px;
+}
+.checkpoint-pin-tail {
+  stroke: none;
+}
+.checkpoint-pin-head {
   transition: r 0.15s;
 }
 .checkpoint-pin text {
@@ -224,7 +240,7 @@
   pointer-events: none;
   user-select: none;
 }
-.checkpoint-pin:hover circle,
-.checkpoint-pin:focus-visible circle {
-  r: 8;
+.checkpoint-pin:hover .checkpoint-pin-head,
+.checkpoint-pin:focus-visible .checkpoint-pin-head {
+  r: 6.5;
 }

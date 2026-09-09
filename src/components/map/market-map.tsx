@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { toast } from "sonner";
-import { ImageOff, Pencil, Trash2, CheckCircle2, Upload, X, Users } from "lucide-react";
+import { ImageOff, Pencil, Trash2, CheckCircle2, Upload, X, Users, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,10 @@ export function MarketMap({
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editingByOthers, setEditingByOthers] = useState<Record<string, boolean>>({});
+  // Admin-only "needs info" pulse — off by default (the map otherwise looks
+  // alarming/noisy on every load), toggled on deliberately when someone
+  // actually wants to go hunt for empty plots to fill in.
+  const [showNeedsInfo, setShowNeedsInfo] = useState(false);
   const { isScanned } = useCheckpointProgress();
 
   // Per-tab id so this client can tell "someone else is editing" apart from
@@ -152,9 +156,9 @@ export function MarketMap({
       const id = el.getAttribute("data-plot-id");
       const hasInfo = !!(id && storesState[id]?.name);
       el.setAttribute("data-has-info", hasInfo ? "true" : "false");
-      el.setAttribute("data-needs-info", isAdmin && !hasInfo ? "true" : "false");
+      el.setAttribute("data-needs-info", isAdmin && showNeedsInfo && !hasInfo ? "true" : "false");
     });
-  }, [storesState, initialTransform, isAdmin]);
+  }, [storesState, initialTransform, isAdmin, showNeedsInfo]);
 
   // Draw the checkpoint pins once, as real children of the injected <svg> (not a
   // separate overlay) so they pan/zoom in lockstep with the map for free, and
@@ -164,6 +168,17 @@ export function MarketMap({
     const svg = root?.querySelector("svg");
     if (!svg) return;
 
+    // Round-head map-pin shape: the group's own (0,0) — where it's translated
+    // to — is the pin's TIP, sitting exactly on the checkpoint's true map
+    // location. The round head (with the number) floats above that point on a
+    // thin tail, so only a sliver of the pin actually touches the building
+    // underneath instead of a flat circle sitting right on top of it.
+    const HEAD_R = 5;
+    const TAIL_LEN = 4;
+    const headCenterY = -(HEAD_R + TAIL_LEN);
+    const tailBaseY = -TAIL_LEN + 1.5; // slight overlap into the head, hides the seam
+    const tailHalfWidth = HEAD_R * 0.45;
+
     const g = document.createElementNS(SVG_NS, "g");
     g.setAttribute("class", "checkpoint-pins");
     for (const cp of checkpoints) {
@@ -172,14 +187,24 @@ export function MarketMap({
       pin.setAttribute("class", "checkpoint-pin");
       pin.setAttribute("transform", `translate(${cp.mapX}, ${cp.mapY})`);
 
+      const tail = document.createElementNS(SVG_NS, "path");
+      tail.setAttribute("class", "checkpoint-pin-tail");
+      tail.setAttribute(
+        "d",
+        `M 0 0 L ${-tailHalfWidth} ${tailBaseY} L ${tailHalfWidth} ${tailBaseY} Z`,
+      );
+      pin.appendChild(tail);
+
       const circle = document.createElementNS(SVG_NS, "circle");
-      circle.setAttribute("r", "6.5");
+      circle.setAttribute("class", "checkpoint-pin-head");
+      circle.setAttribute("cy", String(headCenterY));
+      circle.setAttribute("r", String(HEAD_R));
       pin.appendChild(circle);
 
       const label = document.createElementNS(SVG_NS, "text");
       label.setAttribute("text-anchor", "middle");
       label.setAttribute("dominant-baseline", "central");
-      label.setAttribute("y", "0.5");
+      label.setAttribute("y", String(headCenterY + 0.5));
       label.textContent = String(cp.order);
       pin.appendChild(label);
 
@@ -300,9 +325,23 @@ export function MarketMap({
             </TransformComponent>
           </TransformWrapper>
         )}
+        {isAdmin && (
+          <Button
+            type="button"
+            size="sm"
+            variant={showNeedsInfo ? "default" : "outline"}
+            onClick={() => setShowNeedsInfo((v) => !v)}
+            className="absolute top-2 right-2 shadow"
+          >
+            <Sparkles className="size-4" />
+            {showNeedsInfo ? "ซ่อนจุดที่ยังไม่มีข้อมูล" : "แสดงจุดที่ยังไม่มีข้อมูล"}
+          </Button>
+        )}
         <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 text-center text-xs text-muted-foreground shadow">
           {isAdmin
-            ? "ลากเพื่อเลื่อน · ซูมด้วยล้อเมาส์ · จุดเขียวกะพริบ = ยังไม่มีข้อมูล"
+            ? showNeedsInfo
+              ? "ลากเพื่อเลื่อน · ซูมด้วยล้อเมาส์ · จุดเขียวกะพริบ = ยังไม่มีข้อมูล"
+              : "ลากเพื่อเลื่อน · ซูมด้วยล้อเมาส์ · กดปุ่มมุมขวาบนเพื่อดูจุดที่ยังไม่มีข้อมูล"
             : "ลากเพื่อเลื่อน · บีบนิ้ว/เลื่อนล้อเมาส์เพื่อซูม · แตะจุดเพื่อดูข้อมูลร้านค้า"}
         </p>
       </div>
