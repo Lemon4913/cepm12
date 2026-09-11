@@ -7,7 +7,7 @@ import { LocateFixed, LocateOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkpoints } from "@/lib/checkpoints";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
-import { MARKET_GEO, georeference, parseViewBox } from "@/lib/map-geo";
+import { MARKET_GEO, REAL_MAP_LAYER_OFFSETS, CHECKPOINT_LAYER, georeference, parseViewBox } from "@/lib/map-geo";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 /**
@@ -65,7 +65,11 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
     const vb = parseViewBox(svgMarkup);
     // (Attribute selectors can't express the namespaced inkscape:label, so scan the groups instead.)
     for (const g of inner.querySelectorAll<SVGGElement>("g")) {
-      if (SCENERY_LAYERS.has(g.getAttribute("inkscape:label") ?? "")) g.style.display = "none";
+      const label = g.getAttribute("inkscape:label") ?? "";
+      if (SCENERY_LAYERS.has(label)) g.style.display = "none";
+      const nudge = REAL_MAP_LAYER_OFFSETS[label];
+      // Prepend so the nudge applies in the parent's space, after any transform the layer already has.
+      if (nudge) g.setAttribute("transform", `translate(${nudge.dx} ${nudge.dy}) ${g.getAttribute("transform") ?? ""}`.trim());
     }
     inner.setAttribute("x", "0");
     inner.setAttribute("y", "0");
@@ -82,7 +86,8 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
     L.svgOverlay(outer, geo.bounds, { interactive: false, opacity: 0.92 }).addTo(map);
 
     for (const cp of checkpoints) {
-      const marker = L.marker(geo.toLatLng(cp.mapX, cp.mapY), {
+      const nudge = REAL_MAP_LAYER_OFFSETS[CHECKPOINT_LAYER[cp.id] ?? ""] ?? { dx: 0, dy: 0 };
+      const marker = L.marker(geo.toLatLng(cp.mapX + nudge.dx, cp.mapY + nudge.dy), {
         icon: pinIcon(cp.order, false),
         title: cp.nameTh,
         keyboard: true,

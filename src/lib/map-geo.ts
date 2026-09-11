@@ -18,14 +18,48 @@
  * If the artwork is redrawn, refit rather than nudging by eye; the drawn
  * scenery is accurate enough that eyeballing against the pink retail
  * outline (OSM way 544062946) lands ~35 m off.
+ *
+ * On top of that fit, the buildings are drawn ~8% smaller than the scenery
+ * fit implies (the artwork exaggerates them a little) and a few blocks get
+ * the small per-layer nudges in REAL_MAP_LAYER_OFFSETS, so that on real
+ * tiles no block sits on a road or in the river — solved jointly so blocks
+ * don't land on each other either. Satellite imagery confirms the market
+ * genuinely runs up to the riverbank and the north road, so the OSM retail
+ * outline (which is smaller) is deliberately *not* used as a constraint.
  */
 export const MARKET_GEO = {
-  center: { lat: 13.801805, lng: 100.186489 },
+  center: { lat: 13.801762, lng: 100.186518 },
   bearingDeg: 86.6,
-  metersPerUnit: 1.552,
+  metersPerUnit: 1.428,
   /** Sensible zoom to open the real-world map at (Leaflet zoom level). */
   initialZoom: 18,
 } as const;
+
+/**
+ * Per-layer nudges (in the drawing's own user units) applied only on the
+ * real-world map, keyed by the Inkscape layer label in market-plan.svg.
+ * Each moves that block a few metres off a road/riverbank it would
+ * otherwise straddle; checkpoint pins inside the block move with it (see
+ * CHECKPOINT_LAYER). Layers not listed stay put.
+ */
+export const REAL_MAP_LAYER_OFFSETS: Record<string, { dx: number; dy: number }> = {
+  "Rim tanon": { dx: -0.7, dy: 0 },
+  "Bon suud": { dx: -1.9, dy: -3.6 },
+  "raja barmhee": { dx: -1.2, dy: -3.6 },
+  left: { dx: 2.1, dy: 0.8 },
+  "rim naam": { dx: 0.7, dy: -0.7 },
+};
+
+/** Which drawing layer each checkpoint's pin sits in (so it follows that layer's offset). */
+export const CHECKPOINT_LAYER: Record<string, string> = {
+  "cp-01": "rim naam",
+  "cp-02": "Right",
+  "cp-03": "klang",
+  "cp-04": "Bon suud",
+  "cp-05": "Rim tanon",
+  "cp-06": "Rim tanon",
+  "cp-07": "Saan jao mae",
+};
 
 /** Metres per degree of latitude (near-constant) and longitude (at a latitude). */
 const M_PER_DEG_LAT = 110_574;
