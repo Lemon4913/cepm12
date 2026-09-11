@@ -77,6 +77,7 @@ export const checkpoints: Checkpoint[] = [
     nameTh: "โซนข้างศูนย์อาหาร หน้าร้านขายของเล่น",
     nameEn: "Toy Shop Corner",
     descriptionTh: "โซนข้างศูนย์อาหาร บริเวณเสาหน้าร้านขายของเล่น",
+    imageUrls: ["/checkpoints/cp-03-1.jpg", "/checkpoints/cp-03-2.jpg", "/checkpoints/cp-03-3.jpg", "/checkpoints/cp-03-4.jpg"],
     qrValue: "739481",
     mapX: 152.52,
     mapY: 121.03,
