@@ -233,6 +233,10 @@ export function MarketMap({
       circle.setAttribute("cx", String(headCx));
       circle.setAttribute("cy", String(headCy));
       circle.setAttribute("r", String(HEAD_R));
+      // Exposed as a CSS var (rather than a hardcoded hover radius) so the
+      // hover-grow effect in globals.css scales with HEAD_R instead of
+      // silently drifting out of proportion if HEAD_R ever changes again.
+      circle.style.setProperty("--head-r", String(HEAD_R));
       scaleGroup.appendChild(circle);
 
       const label = document.createElementNS(SVG_NS, "text");
@@ -240,6 +244,9 @@ export function MarketMap({
       label.setAttribute("dominant-baseline", "central");
       label.setAttribute("x", String(headCx));
       label.setAttribute("y", String(headCy + 0.5));
+      // Sized relative to HEAD_R (not a fixed px value) so the digit always
+      // fits the circle regardless of the map's own unit scale.
+      label.setAttribute("font-size", String(HEAD_R * 1.4));
       label.textContent = String(cp.order);
       scaleGroup.appendChild(label);
 

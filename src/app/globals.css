@@ -234,13 +234,15 @@
   transition: r 0.15s;
 }
 .checkpoint-pin text {
+  /* font-size is set inline per-pin (market-map.tsx), proportional to its
+     head radius, so it isn't a fixed px value that can drift out of sync
+     with HEAD_R again. */
   fill: #fff;
-  font-size: 7px;
   font-weight: 700;
   pointer-events: none;
   user-select: none;
 }
 .checkpoint-pin:hover .checkpoint-pin-head,
 .checkpoint-pin:focus-visible .checkpoint-pin-head {
-  r: 6.5;
+  r: calc(var(--head-r) * 1.3);
 }
