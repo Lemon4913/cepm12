@@ -12,9 +12,9 @@ import { MARKET_GEO, georeference, parseViewBox } from "@/lib/map-geo";
 const SVG_NS = "http://www.w3.org/2000/svg";
 /**
  * Inkscape layer labels in market-plan.svg that draw scenery (river, roads)
- * rather than buildings. They're georeferenced onto the real river/roads (see
- * map-geo.ts) so they stay visible — same look as the floor-plan tab — but
- * the opening view frames only the buildings.
+ * rather than buildings. The calibration in map-geo.ts was fitted so these
+ * land on the real river/roads, but on top of actual tiles they're redundant
+ * (and slightly cover OSM's own), so only the buildings are shown here.
  */
 const SCENERY_LAYERS = new Set(["mea naam", "taNON"]);
 
@@ -64,9 +64,9 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
     const inner = document.importNode(parsed.documentElement, true) as unknown as SVGSVGElement;
     const vb = parseViewBox(svgMarkup);
     // (Attribute selectors can't express the namespaced inkscape:label, so scan the groups instead.)
-    const sceneryLayers = [...inner.querySelectorAll<SVGGElement>("g")].filter((g) =>
-      SCENERY_LAYERS.has(g.getAttribute("inkscape:label") ?? ""),
-    );
+    for (const g of inner.querySelectorAll<SVGGElement>("g")) {
+      if (SCENERY_LAYERS.has(g.getAttribute("inkscape:label") ?? "")) g.style.display = "none";
+    }
     inner.setAttribute("x", "0");
     inner.setAttribute("y", "0");
     inner.setAttribute("width", String(vb.w));
@@ -91,14 +91,10 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
       markers.set(cp.id, marker);
     }
 
-    // Open on the buildings themselves rather than the whole drawing (its
-    // river/road margins would push the market into a small blob on a phone).
-    // getBBox ignores display:none layers and reports in the nested <svg>'s
-    // own viewBox units — the same space checkpoints use — so hide the
-    // scenery just long enough to measure.
-    for (const g of sceneryLayers) g.style.display = "none";
+    // Open on the buildings regardless of the container's aspect ratio.
+    // getBBox ignores the display:none scenery and reports in the nested
+    // <svg>'s own viewBox units — the same space checkpoints use.
     const bbox = inner.getBBox();
-    for (const g of sceneryLayers) g.style.display = "";
     const corners = [
       geo.toLatLng(bbox.x, bbox.y),
       geo.toLatLng(bbox.x + bbox.width, bbox.y),
