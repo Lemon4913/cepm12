@@ -66,6 +66,7 @@ export const checkpoints: Checkpoint[] = [
     nameTh: "เสาปูนบริเวณจุดรับประทานอาหาร",
     nameEn: "Dining Area Pillar",
     descriptionTh: "เสาปูนกลางจุดรับประทานอาหารในตลาด จุดพักระหว่างเดินชมตลาด",
+    imageUrls: ["/checkpoints/cp-02-1.jpg", "/checkpoints/cp-02-2.jpg"],
     qrValue: "067254",
     mapX: 146.45,
     mapY: 133.54,
