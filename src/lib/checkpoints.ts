@@ -133,7 +133,7 @@ export const checkpoints: Checkpoint[] = [
       "/checkpoints/cp-06-2.jpg",
       "/checkpoints/cp-06-3.jpg",
       "/checkpoints/cp-06-4.jpg",
-      "/checkpoints/cp-06-5.jpg",
+      "/shops/aya-coffee-1.jpg",
     ],
     qrValue: "350962",
     mapX: 125.68,
