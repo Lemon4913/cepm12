@@ -84,6 +84,9 @@ export const checkpoints: Checkpoint[] = [
     nameTh: "โซนข้างศูนย์อาหาร หน้าร้านขายของเล่น",
     nameEn: "Toy Shop Corner",
     descriptionTh: "โซนข้างศูนย์อาหาร บริเวณเสาหน้าร้านขายของเล่น",
+    aboutTh:
+      "ชื่อตลาดท่านามีที่มาจากนาข้าวที่ชาวบ้านนิยมปลูกกันโดยรอบตลาด พื้นที่ตรงนี้ยังเป็นท่าเรือขนส่งสินค้า " +
+      "รวมทั้งเป็นท่าขึ้นข้าวเปลือกที่สำคัญ ทำให้ผู้คนเรียกขานกันติดปากว่า \"ตลาดท่านา\"",
     imageUrls: ["/checkpoints/cp-03-1.jpg", "/checkpoints/cp-03-2.jpg", "/checkpoints/cp-03-3.jpg", "/checkpoints/cp-03-4.jpg"],
     qrValue: "739481",
     mapX: 152.52,
