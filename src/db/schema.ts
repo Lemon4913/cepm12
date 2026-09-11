@@ -21,6 +21,21 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Emails an admin has pre-authorized to become admin on their first signup —
+ * for handing admin access to a teammate who hasn't made an account yet,
+ * instead of requiring them to sign up first and then get manually promoted.
+ * Consumed (deleted) the moment a matching signup happens; see signup() in
+ * src/app/actions/auth.ts.
+ */
+export const pendingAdminEmails = pgTable("pending_admin_emails", {
+  email: text("email").primaryKey(),
+  addedByUserId: text("added_by_user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id")

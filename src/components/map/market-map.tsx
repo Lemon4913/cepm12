@@ -183,8 +183,14 @@ export function MarketMap({
     // clockwise from straight up) — some checkpoints sit in tight clusters of
     // small plots where "straight up" still lands the head on a building;
     // see checkpoints.ts.
-    const HEAD_R = 5;
-    const TAIL_LEN = 4;
+    // The map artwork's own unit scale (how many SVG units span one physical
+    // plot) — the river/road revision reuses the same store-plot shapes
+    // uniformly scaled down by ~0.649 (see checkpoints.ts), so the pin's own
+    // size is scaled by the same factor to stay proportional to the buildings
+    // instead of ballooning relative to them.
+    const MAP_UNIT_SCALE = 0.649098;
+    const HEAD_R = 5 * MAP_UNIT_SCALE;
+    const TAIL_LEN = 4 * MAP_UNIT_SCALE;
     const tailHalfWidth = HEAD_R * 0.45;
 
     const g = document.createElementNS(SVG_NS, "g");
@@ -198,7 +204,7 @@ export function MarketMap({
       const headDist = HEAD_R + TAIL_LEN;
       const headCx = dx * headDist;
       const headCy = dy * headDist;
-      const tailBaseDist = TAIL_LEN - 1.5; // slight overlap into the head, hides the seam
+      const tailBaseDist = TAIL_LEN - 1.5 * MAP_UNIT_SCALE; // slight overlap into the head, hides the seam
       const tailBaseX = dx * tailBaseDist;
       const tailBaseY = dy * tailBaseDist;
 

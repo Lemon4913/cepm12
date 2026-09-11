@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { users, type Role } from "@/db/schema";
+import { users, pendingAdminEmails, type Role } from "@/db/schema";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { generateOtpCode, hashOtpCode, otpExpiryDate, verifyOtpCode } from "@/lib/auth/otp";
 import { sendOtpEmail } from "@/lib/auth/email";
@@ -81,6 +81,17 @@ export async function signup(_prevState: AuthFormState, formData: FormData): Pro
     return { error: "อีเมลนี้ถูกใช้งานแล้ว กรุณาเข้าสู่ระบบแทน" };
   }
 
+  // An admin may have pre-authorized this email before this signup ever
+  // happened (see preAuthorizeAdminEmail in actions/admin.ts) — if so, this
+  // account becomes admin regardless of whatever role/storeName the signup
+  // form itself submitted, and the pre-authorization is consumed (one-time).
+  const preAuthorized = await db
+    .select({ email: pendingAdminEmails.email })
+    .from(pendingAdminEmails)
+    .where(eq(pendingAdminEmails.email, email))
+    .limit(1);
+  const finalRole: Role = preAuthorized.length > 0 ? "admin" : role;
+
   const passwordHash = await hashPassword(password);
   const userId = crypto.randomUUID();
 
@@ -89,10 +100,14 @@ export async function signup(_prevState: AuthFormState, formData: FormData): Pro
     email,
     passwordHash,
     name,
-    role,
-    storeName: role === "store" ? storeName : null,
+    role: finalRole,
+    storeName: finalRole === "store" ? storeName : null,
     newsOptIn,
   });
+
+  if (preAuthorized.length > 0) {
+    await db.delete(pendingAdminEmails).where(eq(pendingAdminEmails.email, email));
+  }
 
   await issueOtp(userId, email);
   await setPendingAuth(userId);

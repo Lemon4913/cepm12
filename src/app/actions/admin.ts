@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, pendingAdminEmails } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth/dal";
 
 async function requireAdmin() {
@@ -55,6 +55,65 @@ export async function promoteToAdmin(
 
   await db.update(users).set({ role: "admin" }).where(eq(users.id, target.id));
   return { success: `เพิ่ม ${target.name} เป็นผู้ดูแลระบบเรียบร้อยแล้ว` };
+}
+
+export type PendingAdminEmail = { email: string; createdAt: Date };
+
+export async function listPendingAdminEmails(): Promise<PendingAdminEmail[]> {
+  await requireAdmin();
+  return db
+    .select({ email: pendingAdminEmails.email, createdAt: pendingAdminEmails.createdAt })
+    .from(pendingAdminEmails)
+    .orderBy(pendingAdminEmails.createdAt);
+}
+
+/**
+ * Pre-authorizes an email to become admin the moment it signs up (see
+ * signup() in src/app/actions/auth.ts, which checks and consumes this table)
+ * — for handing admin access to a teammate who hasn't made an account yet.
+ * If the email already has an account, promotes it immediately instead of
+ * waiting on a signup that will never happen.
+ */
+export async function preAuthorizeAdminEmail(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const me = await requireAdmin();
+
+  const parsed = EmailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) {
+    return { error: "อีเมลไม่ถูกต้อง" };
+  }
+  const email = parsed.data;
+
+  const rows = await db.select({ id: users.id, name: users.name, role: users.role }).from(users).where(eq(users.email, email)).limit(1);
+  const existing = rows[0];
+
+  if (existing) {
+    if (existing.role === "admin") {
+      return { error: "ผู้ใช้นี้เป็นผู้ดูแลระบบอยู่แล้ว" };
+    }
+    await db.update(users).set({ role: "admin" }).where(eq(users.id, existing.id));
+    return { success: `${existing.name} สมัครสมาชิกไว้แล้ว จึงเพิ่มเป็นผู้ดูแลระบบให้ทันที` };
+  }
+
+  const already = await db
+    .select({ email: pendingAdminEmails.email })
+    .from(pendingAdminEmails)
+    .where(eq(pendingAdminEmails.email, email))
+    .limit(1);
+  if (already.length > 0) {
+    return { error: "อีเมลนี้ได้รับสิทธิ์ผู้ดูแลระบบล่วงหน้าไว้แล้ว" };
+  }
+
+  await db.insert(pendingAdminEmails).values({ email, addedByUserId: me.id });
+  return { success: `เมื่อ ${email} สมัครสมาชิก จะได้รับสิทธิ์ผู้ดูแลระบบทันที` };
+}
+
+export async function revokePendingAdminEmail(email: string): Promise<AdminActionState> {
+  await requireAdmin();
+  await db.delete(pendingAdminEmails).where(eq(pendingAdminEmails.email, email));
+  return { success: "ยกเลิกสิทธิ์ล่วงหน้าเรียบร้อยแล้ว" };
 }
 
 export async function demoteAdmin(userId: string): Promise<AdminActionState> {

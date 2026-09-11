@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { AdminCheckpointTable } from "@/components/admin-checkpoint-table";
 import { AdminManagement } from "@/components/admin/admin-management";
+import { PendingAdminManagement } from "@/components/admin/pending-admin-management";
 import { StoreRoleManagement } from "@/components/admin/store-role-management";
 import { PhotoThresholdForm } from "@/components/admin/photo-threshold-form";
 import { StatsOverview } from "@/components/admin/stats-overview";
@@ -12,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
-import type { AdminUserSummary, StoreAccountSummary } from "@/app/actions/admin";
+import type { AdminUserSummary, StoreAccountSummary, PendingAdminEmail } from "@/app/actions/admin";
 import type { AdminStats } from "@/app/actions/stats";
 import type { FeedbackSummary } from "@/app/actions/feedback";
 
@@ -21,6 +22,7 @@ export function AdminDashboard({
   adminId,
   admins,
   storeAccounts,
+  pendingAdminEmails,
   photoThreshold,
   stats,
   feedbackSummary,
@@ -29,6 +31,7 @@ export function AdminDashboard({
   adminId: string;
   admins: AdminUserSummary[];
   storeAccounts: StoreAccountSummary[];
+  pendingAdminEmails: PendingAdminEmail[];
   photoThreshold: number;
   stats: AdminStats | null;
   feedbackSummary: FeedbackSummary | null;
@@ -98,6 +101,18 @@ export function AdminDashboard({
           </CardHeader>
           <CardContent>
             <AdminManagement admins={admins} currentUserId={adminId} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">สิทธิ์ผู้ดูแลระบบล่วงหน้า</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              เพิ่มอีเมลของทีมงานที่ยังไม่ได้สมัครสมาชิก — เมื่อสมัครด้วยอีเมลนี้เมื่อไหร่ จะได้เป็นผู้ดูแลระบบทันที
+            </p>
+            <PendingAdminManagement pending={pendingAdminEmails} />
           </CardContent>
         </Card>
 

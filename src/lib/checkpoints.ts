@@ -9,9 +9,14 @@ export type Checkpoint = {
   /**
    * Position of this checkpoint's pin on the market map, in the same user-space
    * units as public/map/market-plan.svg's viewBox — see src/components/map/market-map.tsx.
-   * Calibrated against "แผนที่จุดเช็คอิน" (the numbered reference image from the art
-   * team) by matching its pins to landmark shapes on the actual map artwork
-   * (shrine, river strip, mural blocks) since the two aren't pixel-identical crops.
+   * Originally calibrated against "แผนที่จุดเช็คอิน" (the numbered reference image
+   * from the art team) by matching its pins to landmark shapes on the actual map
+   * artwork (shrine, river strip, mural blocks) since the two aren't pixel-identical
+   * crops. When the map artwork was replaced with a version that adds the river and
+   * road layers, every store-plot shape kept its id but moved/rescaled uniformly
+   * (same affine transform for the whole drawing) — these coordinates were carried
+   * over through that exact transform (scale ~0.649098, translate ~+55.58/+29.69),
+   * not re-eyeballed, so they still point at the same physical spots.
    */
   mapX: number;
   mapY: number;
@@ -36,8 +41,8 @@ export const checkpoints: Checkpoint[] = [
     nameEn: "Fish Feeding Station",
     descriptionTh: "ตู้จำหน่ายอาหารปลาอัตโนมัติบริเวณริมน้ำ กิจกรรมยอดนิยมสำหรับนักท่องเที่ยวทุกวัย",
     qrValue: "482913",
-    mapX: 183,
-    mapY: 97,
+    mapX: 174.37,
+    mapY: 92.65,
   },
   {
     id: "cp-02",
@@ -46,8 +51,8 @@ export const checkpoints: Checkpoint[] = [
     nameEn: "Dining Area Pillar",
     descriptionTh: "เสาปูนกลางจุดรับประทานอาหารในตลาด จุดพักระหว่างเดินชมตลาด",
     qrValue: "067254",
-    mapX: 140,
-    mapY: 160,
+    mapX: 146.45,
+    mapY: 133.54,
     headAngle: 205,
   },
   {
@@ -57,8 +62,8 @@ export const checkpoints: Checkpoint[] = [
     nameEn: "Toy Shop Corner",
     descriptionTh: "โซนข้างศูนย์อาหาร บริเวณเสาหน้าร้านขายของเล่น",
     qrValue: "739481",
-    mapX: 149.35,
-    mapY: 140.73,
+    mapX: 152.52,
+    mapY: 121.03,
     headAngle: 302,
   },
   {
@@ -68,8 +73,8 @@ export const checkpoints: Checkpoint[] = [
     nameEn: "Market Mural Alley",
     descriptionTh: "ภาพจิตรกรรมฝาผนังรูปตลาดท่านา บอกเล่าเรื่องราวตลาดในอดีต",
     qrValue: "215608",
-    mapX: 110.37,
-    mapY: 84.62,
+    mapX: 127.22,
+    mapY: 84.61,
     headAngle: 187,
   },
   {
@@ -79,8 +84,8 @@ export const checkpoints: Checkpoint[] = [
     nameEn: "Songthaew Mural Alley",
     descriptionTh: "ภาพจิตรกรรมฝาผนังรูปรถสองแถว สัญลักษณ์การเดินทางของชุมชน",
     qrValue: "894027",
-    mapX: 72.79,
-    mapY: 117.52,
+    mapX: 102.83,
+    mapY: 105.97,
   },
   {
     id: "cp-06",
@@ -89,8 +94,8 @@ export const checkpoints: Checkpoint[] = [
     nameEn: "Phon Charoen Shop",
     descriptionTh: "จุดเช็คอินข้างร้านพรเจริญ ร้านค้าดั้งเดิมของตลาดท่านา",
     qrValue: "350962",
-    mapX: 108,
-    mapY: 108,
+    mapX: 125.68,
+    mapY: 99.79,
   },
   {
     id: "cp-07",
@@ -99,8 +104,8 @@ export const checkpoints: Checkpoint[] = [
     nameEn: "Chao Mae Boek Phrai Shrine Parking",
     descriptionTh: "ลานจอดรถศาลเจ้าแม่เบิกไพร จุดสิ้นสุดเส้นทางเดินชมตลาด",
     qrValue: "671845",
-    mapX: 22.81,
-    mapY: 147.17,
+    mapX: 70.39,
+    mapY: 125.21,
     headAngle: 230,
   },
 ];
