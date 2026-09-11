@@ -341,6 +341,9 @@
   {
     "plotId": "rect151",
     "number": 65,
-    "name": "ตู้กดอาหารปลา"
+    "name": "ตู้กดอาหารปลา",
+    "photoUrls": [
+      "/shops/fish-feeding-1.jpg"
+    ]
   }
 ]
