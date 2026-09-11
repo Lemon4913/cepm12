@@ -1399,7 +1399,7 @@
          id="rect145"
          style="display:inline;fill:#d16567;fill-opacity:1;stroke:url(#linearGradient157);stroke-width:0.873258;stroke-dasharray:none"
          d="m 58.902485,110.59574 15.489679,-3.48561 7.425259,32.99724 -15.489678,3.4856 z"
-         class="market-zone" data-zone="Saan jao mae" />
+         data-plot-id="rect172" data-plot-zone="Saan jao mae" class="market-plot" />
       <rect
          style="display:inline;fill:#e7e4dd;fill-opacity:1;stroke:url(#linearGradient174);stroke-width:0.583315;stroke-linejoin:miter;stroke-dasharray:none;paint-order:stroke fill markers"
          id="rect172"
@@ -1408,7 +1408,7 @@
          x="34.680984"
          y="141.24841"
          transform="rotate(-13.006964)"
-         data-plot-id="rect172" data-plot-zone="Saan jao mae" class="market-plot" />
+         data-plot-id="rect172" data-plot-zone="Saan jao mae" class="market-plot market-plot-no-outline" />
       <rect
          style="display:inline;fill:#e7e4dd;fill-opacity:1;stroke:url(#linearGradient173);stroke-width:0.445811;stroke-linejoin:miter;stroke-dasharray:none;paint-order:stroke fill markers"
          id="rect173"
@@ -1417,7 +1417,7 @@
          x="122.65029"
          y="-46.398193"
          transform="rotate(77.08885)"
-         data-plot-id="rect172" data-plot-zone="Saan jao mae" class="market-plot" />
+         data-plot-id="rect172" data-plot-zone="Saan jao mae" class="market-plot market-plot-no-outline" />
     </g>
     <g
        inkscape:groupmode="layer"

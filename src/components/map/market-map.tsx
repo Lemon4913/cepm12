@@ -150,17 +150,15 @@ export function MarketMap({
     };
   }, [isAdmin, editing, selectedPlotId]);
 
-  // Mark plots that already have a name so they stand out on the map, and
-  // (admin only) pulse the ones that don't — see .market-plot[data-has-info]
-  // / [data-needs-info] in globals.css. Also re-runs once initialTransform
-  // resolves, since the container only mounts then.
+  // Admin-only: pulse plots that are still missing a name — see
+  // .market-plot[data-needs-info] in globals.css. Also re-runs once
+  // initialTransform resolves, since the container only mounts then.
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
     root.querySelectorAll<SVGElement>("[data-plot-id]").forEach((el) => {
       const id = el.getAttribute("data-plot-id");
       const hasInfo = !!(id && storesState[id]?.name);
-      el.setAttribute("data-has-info", hasInfo ? "true" : "false");
       el.setAttribute("data-needs-info", isAdmin && showNeedsInfo && !hasInfo ? "true" : "false");
     });
   }, [storesState, initialTransform, isAdmin, showNeedsInfo]);

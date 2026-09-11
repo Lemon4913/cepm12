@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function HomePage() {
   return (
     <>
-      <PageHeader title="ตลาดท่านา" subtitle="Talat Tha Na Market · นครไชยศรี นครปฐม" />
+      <PageHeader title="ตลาดท่านา" subtitle="Talat Tha Na Market · นครชัยศรี นครปฐม" />
 
       <main className="flex flex-1 flex-col gap-4 p-4 md:mx-auto md:w-full md:max-w-2xl md:gap-5 md:p-6">
         <ProgressSummaryCard />
@@ -17,7 +17,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm leading-relaxed text-muted-foreground">
             <p>
-              ตลาดท่านา ตั้งอยู่ที่ตำบลนครไชยศรี อำเภอนครไชยศรี จังหวัดนครปฐม เป็นตลาดชุมชนริมแม่น้ำนครไชยศรีที่มีอายุกว่า 140 ปี
+              ตลาดท่านา ตั้งอยู่ที่ตำบลนครชัยศรี อำเภอนครชัยศรี จังหวัดนครปฐม เป็นตลาดชุมชนริมแม่น้ำนครชัยศรีที่มีอายุกว่า 140 ปี
               มีรากฐานมาตั้งแต่สมัยรัชกาลที่ 1 และพัฒนาเป็นชุมชนค้าขายสำคัญในสมัยรัชกาลที่ 5
             </p>
             <p>

@@ -160,8 +160,9 @@
 }
 
 /* Market map plots (public/map/market-plan.svg, tagged with .market-plot by
-   the SVG cleanup script) — clickable, and visually distinct once an admin
-   has filled in a name/description/photo for that plot. */
+   the SVG cleanup script) — clickable, but otherwise unstyled for regular
+   visitors; only admins get a visual indicator (the needs-info pulse below),
+   so browsing the map doesn't hint at which stores are/aren't filled in. */
 .market-plot {
   cursor: pointer;
   transition: filter 0.15s;
@@ -171,13 +172,13 @@
   filter: brightness(1.15);
   outline: none;
 }
-.market-plot[data-has-info="true"] {
-  stroke: var(--primary) !important;
-  stroke-width: 2.5px !important;
-}
 /* Admin-only (see market-map.tsx — only set when isAdmin) — a gentle pulse on
    every plot still missing info, so a teammate can spot at a glance what's
-   left to fill in instead of clicking through all ~80 plots one by one. */
+   left to fill in instead of clicking through all ~80 plots one by one.
+   .market-plot-no-outline: for a plot made of multiple SVG shapes sharing one
+   data-plot-id (e.g. a building drawn as two adjoining rects) — only the one
+   shape with the correct whole-building outline should pulse, or every
+   sub-shape pulses on its own and the seam between them shows as a gap. */
 @keyframes needs-info-pulse {
   0%,
   100% {
@@ -191,11 +192,11 @@
     stroke-opacity: 1;
   }
 }
-.market-plot[data-needs-info="true"] {
+.market-plot[data-needs-info="true"]:not(.market-plot-no-outline) {
   animation: needs-info-pulse 1.6s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .market-plot[data-needs-info="true"] {
+  .market-plot[data-needs-info="true"]:not(.market-plot-no-outline) {
     animation: none;
     stroke: #22c55e !important;
     stroke-width: 2px !important;
