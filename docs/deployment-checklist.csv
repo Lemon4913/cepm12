@@ -1,54 +1,54 @@
-Section,Item,Done
-Railway service,Deployment status shows green/active (not crashed or still building),
-Railway service,Public domain exists and the site loads over HTTPS,
-Railway service,SESSION_SECRET variable is a real random string not the placeholder,
-Railway service,ADMIN_PASSWORD variable is a real password not the placeholder,
-Railway service,RESEND_API_KEY is set (not relying on the console-log dev fallback),
-Railway service,EMAIL_FROM is set and matches a sender Resend will actually deliver from,
-Railway service,DATABASE_URL points at the managed Postgres plugin's connection string (not a local/placeholder value),
-Railway service,Postgres plugin is provisioned and reachable; schema pushed (bun run db:push) against it,
-Guest browsing,Home tab loads and shows all 7 checkpoints as ยังไม่สแกน,
-Guest browsing,Map tab renders the full site plan and pan/zoom works,
-Guest browsing,Scan tab loads and browser prompts for camera permission,
-Guest browsing,Others tab shows เข้าสู่ระบบ / สมัครสมาชิก when logged out,
-Guest browsing,Others tab GitHub link points to github.com/Lemon4913/cepm12,
-Guest browsing,Bottom nav switches correctly between all 4 tabs,
-Signup and email OTP,Sign up as user role sends an email and redirects to /verify-2fa,
-Signup and email OTP,Sign up as store role shows storeName field and sends an email too,
-Signup and email OTP,The OTP email actually arrives in the inbox (not just the server log),
-Signup and email OTP,Entering the correct 6-digit code logs in and lands on the right page per role,
-Signup and email OTP,Entering a wrong or expired code shows an error instead of logging in,
-Signup and email OTP,ส่งรหัสอีกครั้ง (resend) sends a new email and old code stops working,
-Signup and email OTP,Resend cooldown blocks a second resend within 30 seconds,
-Signup and email OTP,Log out then log back in sends a fresh code and reaches /verify-2fa again,
-Admin and role gating,Log in as seeded admin and land on /admin after verifying the code,
-Admin and role gating,A user-role account visiting /admin is redirected to /account,
-Admin and role gating,A user-role account visiting /store is redirected to /account,
-Checkpoint progress,Toggling a checkpoint scanned in /admin persists after a hard refresh,
-Checkpoint progress,Guest (logged out) checkpoint progress still works via localStorage,
-Checkpoint progress,Logging in after scanning as a guest merges the local progress into the account,
-Account page,News opt-in checkbox toggles and the new value survives a page reload,
-Account page,Store-role account shows its store name and a link to /store,
-Admin page,QR code preview opens and shows a scannable image for a checkpoint,
-Admin page,รีเซ็ตทั้งหมด clears only that admin account's own progress,
-Data persistence,Trigger a redeploy and confirm the admin account and scanned checkpoints still exist afterward,
-Store photo upload,store_photos table exists on the production database (schema pushed with bun run db:push against the Railway Postgres plugin),
-Store photo upload,As admin on the live site: upload a photo on a plot then thumbnail appears without a refresh and reloading the page still shows it,
-Store photo upload,The uploaded photo actually loads (a photo's /api/store-photos/<id> URL returns the image itself not an error),
-Store photo upload,Delete a photo then it disappears immediately and stays gone after reload,
-Store photo upload,Upload a large phone photo (several MB) and confirm it still works and looks reasonably sized (sharp resizing runs correctly on Railway's build image not just local dev),
-Real-time map sync,Open the same plot's edit form as two different admin logins at once then the second admin sees the "someone else is editing this" warning banner,
-Real-time map sync,With /map open in two browser tabs save a change in one tab then the other tab updates within a couple seconds with no manual refresh (confirms Railway's proxy isn't buffering the SSE stream),
-Real-time map sync,Leave /map open and idle for a few minutes then make an edit elsewhere and confirm the idle tab still receives the update (EventSource survived/reconnected past any proxy idle timeout),
-Map checkpoint pins,All 7 checkpoint pins render as round-head pins with a visible tail rather than plain circles sitting on top of a building,
-Map checkpoint pins,Zoom in on the map then pins stay the same on-screen size instead of growing; tapping a pin still opens its detail sheet,
-Map zones vs. buildings,The large colored zone/roof shapes are not clickable and never show the admin needs-info pulse or edit sheet (only real store plots do),
-Map needs-info visualizer,As admin the show-empty-plots toggle is OFF by default on page load,
-Map needs-info visualizer,Clicking the toggle shows/hides the green pulsing outline on empty plots correctly; a non-admin never sees the toggle button at all,
-Pre-authorized admin emails,pending_admin_emails table exists on the production database (schema pushed with bun run db:push against the Railway Postgres plugin),
-Pre-authorized admin emails,As admin add a teammate's not-yet-registered email in the pre-authorization card then have them sign up with that exact email and confirm they land on /admin instead of /account,
-Pre-authorized admin emails,Adding an email that already has an existing account promotes it immediately instead of just queuing a pending entry,
-Pre-authorized admin emails,Revoking a pending email before that person signs up means a later signup with that email does not become admin,
-Map artwork (river and roads update),The new map with roads and river renders with no missing shapes glitches or stray leftover reference image,
-Map artwork (river and roads update),All 7 checkpoint pins land on the same physical real-world spots as before; spot-check at least 2 of them in person against the actual signage,
-Map artwork (river and roads update),market-plan.svg is reasonably small (tens of KB not several MB) confirming no embedded reference image slipped back in,
+Section,Item,Done,Notes
+Railway service,Deployment status shows green/active (not crashed or still building),TRUE,Per team sheet 2026-09-12
+Railway service,Public domain exists and the site loads over HTTPS,TRUE,Verified 2026-09-12
+Railway service,SESSION_SECRET variable is a real random string not the placeholder,TRUE,Per team sheet
+Railway service,ADMIN_PASSWORD variable is a real password not the placeholder,TRUE,Per team sheet
+Railway service,RESEND_API_KEY is set (not relying on the console-log dev fallback),TRUE,Per team sheet
+Railway service,EMAIL_FROM is set and matches a sender Resend will actually deliver from,TRUE,Per team sheet
+Railway service,DATABASE_URL points at the managed Postgres plugin's connection string (not a local/placeholder value),FALSE,Needs server access
+Railway service,Postgres plugin is provisioned and reachable; schema pushed (bun run db:push) against it,FALSE,Needs server access; db:push after deploy
+Guest browsing,Home tab loads and shows all 7 checkpoints as ยังไม่สแกน,FALSE,Regressed: live shows 6 placeholder checkpoints. Live site (cep-thana.mwit.ac.th) is running a ~28 Aug build; not auto-deploying from main
+Guest browsing,Map tab renders the full site plan and pan/zoom works,FALSE,Regressed: live shows the 'แผนที่กำลังจัดทำ' placeholder. Live site (cep-thana.mwit.ac.th) is running a ~28 Aug build; not auto-deploying from main
+Guest browsing,Scan tab loads and browser prompts for camera permission,TRUE,Verified 2026-09-12
+Guest browsing,Others tab shows เข้าสู่ระบบ / สมัครสมาชิก when logged out,TRUE,Verified 2026-09-12
+Guest browsing,Others tab GitHub link points to github.com/Lemon4913/cepm12,TRUE,Verified 2026-09-12
+Guest browsing,Bottom nav switches correctly between all 4 tabs,TRUE,Verified 2026-09-12
+Signup and email OTP,Sign up as user role sends an email and redirects to /verify-2fa,FALSE,Needs a tester on live
+Signup and email OTP,Sign up as store role shows storeName field and sends an email too,FALSE,Needs a tester on live
+Signup and email OTP,The OTP email actually arrives in the inbox (not just the server log),TRUE,Per team sheet
+Signup and email OTP,Entering the correct 6-digit code logs in and lands on the right page per role,TRUE,Per team sheet
+Signup and email OTP,Entering a wrong or expired code shows an error instead of logging in,TRUE,Per team sheet
+Signup and email OTP,ส่งรหัสอีกครั้ง (resend) sends a new email and old code stops working,TRUE,Per team sheet
+Signup and email OTP,Resend cooldown blocks a second resend within 30 seconds,TRUE,Per team sheet
+Signup and email OTP,Log out then log back in sends a fresh code and reaches /verify-2fa again,TRUE,Per team sheet
+Admin and role gating,Log in as seeded admin and land on /admin after verifying the code,FALSE,"Needs an admin/user tester on live, after deploy"
+Admin and role gating,A user-role account visiting /admin is redirected to /account,FALSE,"Needs an admin/user tester on live, after deploy"
+Admin and role gating,A user-role account visiting /store is redirected to /account,FALSE,"Needs an admin/user tester on live, after deploy"
+Checkpoint progress,Toggling a checkpoint scanned in /admin persists after a hard refresh,FALSE,"Needs an admin/user tester on live, after deploy"
+Checkpoint progress,Guest (logged out) checkpoint progress still works via localStorage,FALSE,"Needs an admin/user tester on live, after deploy"
+Checkpoint progress,Logging in after scanning as a guest merges the local progress into the account,FALSE,"Needs an admin/user tester on live, after deploy"
+Account page,News opt-in checkbox toggles and the new value survives a page reload,FALSE,"Needs an admin/user tester on live, after deploy"
+Account page,Store-role account shows its store name and a link to /store,FALSE,"Needs an admin/user tester on live, after deploy"
+Admin page,QR code preview opens and shows a scannable image for a checkpoint,FALSE,"Needs an admin/user tester on live, after deploy"
+Admin page,รีเซ็ตทั้งหมด clears only that admin account's own progress,FALSE,"Needs an admin/user tester on live, after deploy"
+Data persistence,Trigger a redeploy and confirm the admin account and scanned checkpoints still exist afterward,FALSE,After deploy
+Store photo upload,store_photos table exists on the production database (schema pushed with bun run db:push against the Railway Postgres plugin),FALSE,db:push on production after deploy
+Store photo upload,As admin on the live site: upload a photo on a plot then thumbnail appears without a refresh and reloading the page still shows it,FALSE,"Needs an admin/user tester on live, after deploy"
+Store photo upload,The uploaded photo actually loads (a photo's /api/store-photos/<id> URL returns the image itself not an error),FALSE,"Needs an admin/user tester on live, after deploy"
+Store photo upload,Delete a photo then it disappears immediately and stays gone after reload,FALSE,"Needs an admin/user tester on live, after deploy"
+Store photo upload,Upload a large phone photo (several MB) and confirm it still works and looks reasonably sized (sharp resizing runs correctly on Railway's build image not just local dev),FALSE,"Needs an admin/user tester on live, after deploy"
+Real-time map sync,"Open the same plot's edit form as two different admin logins at once then the second admin sees the ""someone else is editing this"" warning banner",FALSE,"Needs an admin/user tester on live, after deploy"
+Real-time map sync,With /map open in two browser tabs save a change in one tab then the other tab updates within a couple seconds with no manual refresh (confirms Railway's proxy isn't buffering the SSE stream),FALSE,"Needs an admin/user tester on live, after deploy"
+Real-time map sync,Leave /map open and idle for a few minutes then make an edit elsewhere and confirm the idle tab still receives the update (EventSource survived/reconnected past any proxy idle timeout),FALSE,"Needs an admin/user tester on live, after deploy"
+Map checkpoint pins,All 7 checkpoint pins render as round-head pins with a visible tail rather than plain circles sitting on top of a building,FALSE,Passes on main (verified locally 2026-09-12); needs deploy
+Map checkpoint pins,Zoom in on the map then pins stay the same on-screen size instead of growing; tapping a pin still opens its detail sheet,FALSE,Passes on main (verified locally); needs deploy
+Map zones vs. buildings,The large colored zone/roof shapes are not clickable and never show the admin needs-info pulse or edit sheet (only real store plots do),FALSE,Passes on main (verified locally); needs deploy
+Map needs-info visualizer,As admin the show-empty-plots toggle is OFF by default on page load,FALSE,Passes on main (verified locally); needs deploy
+Map needs-info visualizer,Clicking the toggle shows/hides the green pulsing outline on empty plots correctly; a non-admin never sees the toggle button at all,FALSE,Passes on main (verified locally); needs deploy
+Pre-authorized admin emails,pending_admin_emails table exists on the production database (schema pushed with bun run db:push against the Railway Postgres plugin),FALSE,db:push on production after deploy
+Pre-authorized admin emails,As admin add a teammate's not-yet-registered email in the pre-authorization card then have them sign up with that exact email and confirm they land on /admin instead of /account,FALSE,"Needs an admin/user tester on live, after deploy"
+Pre-authorized admin emails,Adding an email that already has an existing account promotes it immediately instead of just queuing a pending entry,FALSE,"Needs an admin/user tester on live, after deploy"
+Pre-authorized admin emails,Revoking a pending email before that person signs up means a later signup with that email does not become admin,FALSE,"Needs an admin/user tester on live, after deploy"
+Map artwork (river and roads update),The new map with roads and river renders with no missing shapes glitches or stray leftover reference image,FALSE,Passes on main (verified locally); needs deploy
+Map artwork (river and roads update),All 7 checkpoint pins land on the same physical real-world spots as before; spot-check at least 2 of them in person against the actual signage,FALSE,Needs an in-person visit
+Map artwork (river and roads update),market-plan.svg is reasonably small (tens of KB not several MB) confirming no embedded reference image slipped back in,FALSE,Passes on main: market-plan.svg is 78 KB; needs deploy
