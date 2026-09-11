@@ -1,0 +1,343 @@
+[
+  {
+    "plotId": "rect172",
+    "number": 1,
+    "name": "ศาลเจ้าแม่เบิกไพร"
+  },
+  {
+    "plotId": "rect176",
+    "number": 2,
+    "name": "คุณป้อมปังเย็น",
+    "pendingSlug": "khun-pom-khanom-pang-yen"
+  },
+  {
+    "plotId": "rect177",
+    "number": 3,
+    "name": "บ้านเดือนดารา"
+  },
+  {
+    "plotId": "rect178",
+    "number": 4,
+    "name": "ร้านเสริมสวยสายพิณ"
+  },
+  {
+    "plotId": "rect179",
+    "number": 5,
+    "name": "โกแดง ติ่มซำ",
+    "pendingSlug": "ko-daeng"
+  },
+  {
+    "plotId": "rect180",
+    "number": 6,
+    "name": "กล้วยอบน้ำผึ้งทอด แม่จำเริญ",
+    "pendingSlug": "kluay-ob-mae-jamroen"
+  },
+  {
+    "plotId": "rect181",
+    "number": 7,
+    "name": "บ้้านโกติน"
+  },
+  {
+    "plotId": "rect182",
+    "number": 8,
+    "name": "AYA Coffee shop"
+  },
+  {
+    "plotId": "rect183",
+    "number": 9,
+    "name": "หนังสือพิมพ์นครชัยศรี"
+  },
+  {
+    "plotId": "rect184",
+    "number": 10,
+    "name": "ขนมบ้านขุนแก้ว"
+  },
+  {
+    "plotId": "rect185",
+    "number": 11,
+    "name": "ลั่งเอง"
+  },
+  {
+    "plotId": "rect186",
+    "number": 12,
+    "name": "ของเก่า อู่พรเจริญ"
+  },
+  {
+    "plotId": "path172",
+    "number": 13,
+    "name": "ราชาบะหมี่เกี๊ยว",
+    "pendingSlug": "racha-bamee"
+  },
+  {
+    "plotId": "rect161",
+    "number": 14,
+    "name": "ปุ๋ย ร้านเสริมสวย"
+  },
+  {
+    "plotId": "rect163",
+    "number": 15,
+    "name": "ทองม้วนรดพูนทรัพย์"
+  },
+  {
+    "plotId": "path170",
+    "number": 16,
+    "name": "ของฝากตลาดท่านา"
+  },
+  {
+    "plotId": "rect159",
+    "number": 17,
+    "name": "ปุ้าระเบียบ"
+  },
+  {
+    "plotId": "rect158",
+    "number": 18,
+    "name": "บ้านส้มโอหวาน"
+  },
+  {
+    "plotId": "rect156",
+    "number": 19,
+    "name": "ร้านสีฟ้า"
+  },
+  {
+    "plotId": "rect102",
+    "number": 20,
+    "name": "มาม่อนจัง",
+    "pendingSlug": "noy-bakery"
+  },
+  {
+    "plotId": "rect101",
+    "number": 21,
+    "name": "หลวงปู่บุญ"
+  },
+  {
+    "plotId": "rect100",
+    "number": 22,
+    "name": "ปูชานมไข่มุก"
+  },
+  {
+    "plotId": "rect99",
+    "number": 23,
+    "name": "ข้าวเกรียบปากหม้อคุณยาย"
+  },
+  {
+    "plotId": "rect97",
+    "number": 25,
+    "name": "เฮ่งเฮียง (ร้านประธาน)"
+  },
+  {
+    "plotId": "rect111",
+    "number": 26,
+    "name": "สำอางค์พาณิชย์"
+  },
+  {
+    "plotId": "rect112",
+    "number": 27,
+    "name": "ห้างทองวิจิตรสุวรรณ"
+  },
+  {
+    "plotId": "rect107",
+    "number": 28,
+    "name": "ก๋วยเตี๋ยวแคะ",
+    "pendingSlug": "kuaytiew-kae"
+  },
+  {
+    "plotId": "rect108",
+    "number": 29,
+    "name": "ตูมตาม",
+    "pendingSlug": "toom-tam"
+  },
+  {
+    "plotId": "rect110",
+    "number": 30,
+    "name": "ร้านของเล่นเก่า",
+    "pendingSlug": "khong-len-yon-yuk"
+  },
+  {
+    "plotId": "rect109",
+    "number": 31,
+    "name": "ก๋วยเตี๋ยวสูตรโบราณ"
+  },
+  {
+    "plotId": "rect106",
+    "number": 32,
+    "name": "Nakornchaisri Antique"
+  },
+  {
+    "plotId": "rect35",
+    "number": 33,
+    "name": "ตูมตาม",
+    "pendingSlug": "toom-tam"
+  },
+  {
+    "plotId": "rect36",
+    "number": 34,
+    "name": "เจ๋พรหอยจ๊อปู"
+  },
+  {
+    "plotId": "rect37",
+    "number": 35,
+    "name": "เจ๋๋พร บาร์บีคิว"
+  },
+  {
+    "plotId": "rect38",
+    "number": 36,
+    "name": "ส้มตำทอด"
+  },
+  {
+    "plotId": "rect40",
+    "number": 37,
+    "name": "เนื้อต้มบ้านสิงห์"
+  },
+  {
+    "plotId": "rect41",
+    "number": 38,
+    "name": "คุณเอ๋หมูกรอบของฝากตลาดท่านา"
+  },
+  {
+    "plotId": "rect42",
+    "number": 39,
+    "name": "ร้านส้มโอหน้าตลาด"
+  },
+  {
+    "plotId": "rect43",
+    "number": 40,
+    "name": "คุุณเอ๋ เมี่ยงกลีบบัว"
+  },
+  {
+    "plotId": "rect44",
+    "number": 41,
+    "name": "ร้านขายกระเป๋า"
+  },
+  {
+    "plotId": "rect45",
+    "number": 42,
+    "name": "คุณเอ๋หมูแแผ่นกรอบ"
+  },
+  {
+    "plotId": "rect29",
+    "number": 43,
+    "name": "ร้านส้มโอเจ๊หมวย"
+  },
+  {
+    "plotId": "rect30",
+    "number": 44,
+    "name": "รวมอาหารเผา"
+  },
+  {
+    "plotId": "rect31",
+    "number": 45,
+    "name": "อัญชลี ถั่วแปบ"
+  },
+  {
+    "plotId": "rect32",
+    "number": 46,
+    "name": "แม่ทองย้อยขนมไทย"
+  },
+  {
+    "plotId": "rect33",
+    "number": 47,
+    "name": "เมี่ยงคำคุณย่า"
+  },
+  {
+    "plotId": "rect34",
+    "number": 48,
+    "name": "ร้านคุณอ๋อยของฝาก"
+  },
+  {
+    "plotId": "rect54",
+    "number": 49,
+    "name": "ป้าส้ม ส้มโอ",
+    "pendingSlug": "pa-som-polamai-sod"
+  },
+  {
+    "plotId": "rect55",
+    "number": 49,
+    "name": "ป้าส้ม ส้มโอ",
+    "pendingSlug": "pa-som-polamai-sod"
+  },
+  {
+    "plotId": "rect57",
+    "number": 50,
+    "name": "บ้าบิ่นมะพร้าวอ่อน ร้านขนมไทยโบราณ"
+  },
+  {
+    "plotId": "rect58",
+    "number": 51,
+    "name": "หมี่กรอบเพื่อสุขภาพ"
+  },
+  {
+    "plotId": "rect59",
+    "number": 52,
+    "name": "กล้วยปิ้งริมน้ำ"
+  },
+  {
+    "plotId": "rect48",
+    "number": 53,
+    "name": "กาแฟโบราณ"
+  },
+  {
+    "plotId": "rect49",
+    "number": 54,
+    "name": "ปุ้๋ย ไก่ตอน"
+  },
+  {
+    "plotId": "rect50",
+    "number": 55,
+    "name": "ปลาช่อนสดทอด ห่อหมกปลาช่อน"
+  },
+  {
+    "plotId": "rect147",
+    "number": 56,
+    "name": "เจียมจันท์เป็ดพะโล้"
+  },
+  {
+    "plotId": "rect52",
+    "number": 56,
+    "name": "เจียมจันท์เป็ดพะโล้"
+  },
+  {
+    "plotId": "rect53",
+    "number": 57,
+    "name": "ร้านขายผักและของใช้ (ไม่รู้ชื่อ)"
+  },
+  {
+    "plotId": "rect60",
+    "number": 58,
+    "name": "เจ๋ตุ๊กผัดไทยริมน้ำ"
+  },
+  {
+    "plotId": "rect61",
+    "number": 59,
+    "name": "ก๋วยเตี๋ยวเนื้อเปื่อย หนูณิชย์"
+  },
+  {
+    "plotId": "rect46",
+    "number": 60,
+    "name": "โรงอาหาร"
+  },
+  {
+    "plotId": "rect47",
+    "number": 61,
+    "name": "ห้องน้ำ"
+  },
+  {
+    "plotId": "rect148",
+    "number": 62,
+    "name": "เกียเฮง เป็ดพะโล้"
+  },
+  {
+    "plotId": "rect149",
+    "number": 63,
+    "name": "น้ำพริก ขนมจีนแม่เล็ก สุบิน"
+  },
+  {
+    "plotId": "rect153",
+    "number": 64,
+    "name": "จุดถ่ายรูปตลาดท่านา"
+  },
+  {
+    "plotId": "rect151",
+    "number": 65,
+    "name": "ตู้กดอาหารปลา"
+  }
+]

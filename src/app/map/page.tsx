@@ -3,22 +3,25 @@ import path from "node:path";
 import { PageHeader } from "@/components/page-header";
 import { MapViewSwitcher } from "@/components/map/map-view-switcher";
 import { getStores, type StoreInfo } from "@/app/actions/stores";
+import { getDirectoryStores } from "@/lib/plot-shops";
 import { getCurrentUser } from "@/lib/auth/dal";
 
 export default async function MapPage() {
   const svgMarkup = await readFile(path.join(process.cwd(), "public", "map", "market-plan.svg"), "utf-8");
 
-  // The map itself (pan/zoom over the site plan) doesn't need the database —
-  // only the per-plot name/photo/description does. Don't let a DB hiccup take
-  // down browsing the map too; just fall back to "no info yet" for every plot.
-  let stores: Record<string, StoreInfo> = {};
+  // Every plot starts from the team's shop directory (name, and where known,
+  // description/photos); rows an admin saved in the database override those
+  // per plot. The map itself (pan/zoom over the site plan) doesn't need the
+  // database, so don't let a DB hiccup take down browsing — on failure the
+  // directory alone is shown.
+  let stores: Record<string, StoreInfo> = getDirectoryStores();
   let isAdmin = false;
   try {
     const [storesResult, user] = await Promise.all([getStores(), getCurrentUser()]);
-    stores = storesResult;
+    stores = { ...stores, ...storesResult };
     isAdmin = user?.role === "admin";
   } catch {
-    // swallow — MarketMap renders fine with an empty stores map
+    // swallow — MarketMap renders fine with just the directory
   }
 
   return (
