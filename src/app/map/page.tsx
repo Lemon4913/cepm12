@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PageHeader } from "@/components/page-header";
-import { MarketMap } from "@/components/map/market-map";
+import { MapViewSwitcher } from "@/components/map/map-view-switcher";
 import { getStores, type StoreInfo } from "@/app/actions/stores";
 import { getCurrentUser } from "@/lib/auth/dal";
 
@@ -26,7 +26,7 @@ export default async function MapPage() {
       <PageHeader title="แผนที่ตลาดท่านา" subtitle="Talat Tha Na Map" wide />
 
       <main className="flex flex-1 flex-col gap-3 p-4 md:mx-auto md:w-full md:max-w-5xl md:gap-4 md:p-6">
-        <MarketMap svgMarkup={svgMarkup} stores={stores} isAdmin={isAdmin} />
+        <MapViewSwitcher svgMarkup={svgMarkup} stores={stores} isAdmin={isAdmin} />
       </main>
     </>
   );
