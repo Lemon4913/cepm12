@@ -10,7 +10,12 @@ import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 import { MARKET_GEO, georeference, parseViewBox } from "@/lib/map-geo";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-/** Inkscape layer labels in market-plan.svg that draw scenery, not buildings. */
+/**
+ * Inkscape layer labels in market-plan.svg that draw scenery (river, roads)
+ * rather than buildings. They're georeferenced onto the real river/roads (see
+ * map-geo.ts) so they stay visible — same look as the floor-plan tab — but
+ * the opening view frames only the buildings.
+ */
 const SCENERY_LAYERS = new Set(["mea naam", "taNON"]);
 
 /**
@@ -58,14 +63,10 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
     const parsed = new DOMParser().parseFromString(svgMarkup, "image/svg+xml");
     const inner = document.importNode(parsed.documentElement, true) as unknown as SVGSVGElement;
     const vb = parseViewBox(svgMarkup);
-    // The artwork draws its own river and road around the buildings. On top of
-    // real tiles those are redundant and clash with OSM's actual river/roads,
-    // so only the buildings (and the checkpoint pins) go on the overlay.
     // (Attribute selectors can't express the namespaced inkscape:label, so scan the groups instead.)
-    for (const layer of inner.querySelectorAll<SVGGElement>("g")) {
-      const label = layer.getAttribute("inkscape:label") ?? "";
-      if (SCENERY_LAYERS.has(label)) layer.style.display = "none";
-    }
+    const sceneryLayers = [...inner.querySelectorAll<SVGGElement>("g")].filter((g) =>
+      SCENERY_LAYERS.has(g.getAttribute("inkscape:label") ?? ""),
+    );
     inner.setAttribute("x", "0");
     inner.setAttribute("y", "0");
     inner.setAttribute("width", String(vb.w));
@@ -90,11 +91,14 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
       markers.set(cp.id, marker);
     }
 
-    // Open on the buildings themselves (the drawing's page has a wide margin
-    // where the hidden river/road used to be) regardless of the container's
-    // aspect ratio. getBBox ignores display:none layers, and reports in the
-    // nested <svg>'s own viewBox units — the same space checkpoints use.
+    // Open on the buildings themselves rather than the whole drawing (its
+    // river/road margins would push the market into a small blob on a phone).
+    // getBBox ignores display:none layers and reports in the nested <svg>'s
+    // own viewBox units — the same space checkpoints use — so hide the
+    // scenery just long enough to measure.
+    for (const g of sceneryLayers) g.style.display = "none";
     const bbox = inner.getBBox();
+    for (const g of sceneryLayers) g.style.display = "";
     const corners = [
       geo.toLatLng(bbox.x, bbox.y),
       geo.toLatLng(bbox.x + bbox.width, bbox.y),

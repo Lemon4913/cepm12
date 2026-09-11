@@ -10,23 +10,19 @@
  *                  points to. 90 = east (no rotation), 0 = north.
  *   metersPerUnit — real-world size of one SVG user unit.
  *
- * Calibrated against OpenStreetMap way 544062946 ("ตลาดท่านา", landuse=retail),
- * whose outline is a ~200 m × ~100 m quadrilateral with the river along its
- * east side — matching the floor plan's horizontal layout with the "rim naam"
- * (riverside) strip on the right — then tuned by eye against the tiles.
- * If the overlay looks shifted/rotated/scaled against the tiles, tweak these
- * three values; nothing else needs to change.
- *
- * Note the drawing itself now includes river ("mea naam") and road ("taNON")
- * layers around the buildings, with the buildings scaled ~0.649 relative to
- * the earlier buildings-only artwork (see checkpoints.ts) — metersPerUnit and
- * center were carried through that same transform so the *buildings* stay
- * where they were tuned, not the page edges.
+ * Calibrated by least-squares fitting the drawing's own river ("mea naam")
+ * and road ("taNON") layers to OpenStreetMap: the drawn road onto the real
+ * road loop around the market (ถนนเลียบแม่น้ำนครชัยศรี / ถนนธรรมสพน์ and the
+ * service road on the north side) and the drawn river bank onto the real
+ * bank of แม่น้ำท่าจีน — median residual ~2 m for the bank, ~5 m for roads.
+ * If the artwork is redrawn, refit rather than nudging by eye; the drawn
+ * scenery is accurate enough that eyeballing against the pink retail
+ * outline (OSM way 544062946) lands ~35 m off.
  */
 export const MARKET_GEO = {
-  center: { lat: 13.80155, lng: 100.18615 },
-  bearingDeg: 88,
-  metersPerUnit: 1.39,
+  center: { lat: 13.801805, lng: 100.186489 },
+  bearingDeg: 86.6,
+  metersPerUnit: 1.552,
   /** Sensible zoom to open the real-world map at (Leaflet zoom level). */
   initialZoom: 18,
 } as const;
