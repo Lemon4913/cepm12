@@ -10,6 +10,8 @@ import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 import { MARKET_GEO, georeference, parseViewBox } from "@/lib/map-geo";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+/** Inkscape layer labels in market-plan.svg that draw scenery, not buildings. */
+const SCENERY_LAYERS = new Set(["mea naam", "taNON"]);
 
 /**
  * The floor plan drawn on top of real OpenStreetMap tiles at the market's
@@ -54,8 +56,16 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
     // Wrap the original drawing in an outer <svg> big enough to hold it
     // rotated, so Leaflet's axis-aligned overlay bounds still line up.
     const parsed = new DOMParser().parseFromString(svgMarkup, "image/svg+xml");
-    const inner = document.importNode(parsed.documentElement, true);
+    const inner = document.importNode(parsed.documentElement, true) as unknown as SVGSVGElement;
     const vb = parseViewBox(svgMarkup);
+    // The artwork draws its own river and road around the buildings. On top of
+    // real tiles those are redundant and clash with OSM's actual river/roads,
+    // so only the buildings (and the checkpoint pins) go on the overlay.
+    // (Attribute selectors can't express the namespaced inkscape:label, so scan the groups instead.)
+    for (const layer of inner.querySelectorAll<SVGGElement>("g")) {
+      const label = layer.getAttribute("inkscape:label") ?? "";
+      if (SCENERY_LAYERS.has(label)) layer.style.display = "none";
+    }
     inner.setAttribute("x", "0");
     inner.setAttribute("y", "0");
     inner.setAttribute("width", String(vb.w));
@@ -80,9 +90,18 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
       markers.set(cp.id, marker);
     }
 
-    // Nudge the initial view so the whole floor plan is in frame regardless of
-    // the container's aspect ratio, instead of trusting a fixed zoom.
-    map.fitBounds(geo.bounds, { padding: [16, 16], maxZoom: 19 });
+    // Open on the buildings themselves (the drawing's page has a wide margin
+    // where the hidden river/road used to be) regardless of the container's
+    // aspect ratio. getBBox ignores display:none layers, and reports in the
+    // nested <svg>'s own viewBox units — the same space checkpoints use.
+    const bbox = inner.getBBox();
+    const corners = [
+      geo.toLatLng(bbox.x, bbox.y),
+      geo.toLatLng(bbox.x + bbox.width, bbox.y),
+      geo.toLatLng(bbox.x, bbox.y + bbox.height),
+      geo.toLatLng(bbox.x + bbox.width, bbox.y + bbox.height),
+    ];
+    map.fitBounds(L.latLngBounds(corners), { padding: [24, 24], maxZoom: 19 });
 
     mapRef.current = map;
     return () => {
