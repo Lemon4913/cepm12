@@ -55,7 +55,7 @@ export const checkpoints: Checkpoint[] = [
     aboutTh:
       "แม่น้ำนครชัยศรี คือชื่อเรียกของแม่น้ำท่าจีนในช่วงที่ไหลผ่านพื้นที่ จ.นครปฐม ซึ่งในอดีตแม่น้ำนครชัยศรี" +
       "เป็นเส้นทางคมนาคมขนส่งสินค้า การค้าขาย และการเกษตรที่สำคัญมาก เป็นแหล่งหล่อเลี้ยงชีวิตและอู่ข้าวอู่น้ำของชาวนครปฐม",
-    imageUrls: ["/checkpoints/cp-01-1.jpg", "/checkpoints/cp-01-2.jpg", "/checkpoints/cp-01-3.jpg"],
+    imageUrls: ["/checkpoints/cp-01-1.jpg", "/checkpoints/cp-01-2.jpg", "/checkpoints/cp-01-3.jpg", "/checkpoints/cp-01-4.jpg"],
     qrValue: "482913",
     mapX: 174.37,
     mapY: 92.65,
@@ -66,7 +66,7 @@ export const checkpoints: Checkpoint[] = [
     nameTh: "เสาปูนบริเวณจุดรับประทานอาหาร",
     nameEn: "Dining Area Pillar",
     descriptionTh: "เสาปูนกลางจุดรับประทานอาหารในตลาด จุดพักระหว่างเดินชมตลาด",
-    imageUrls: ["/checkpoints/cp-02-1.jpg", "/checkpoints/cp-02-2.jpg"],
+    imageUrls: ["/checkpoints/cp-02-1.jpg", "/checkpoints/cp-02-2.jpg", "/checkpoints/cp-02-3.jpg"],
     qrValue: "067254",
     mapX: 146.45,
     mapY: 133.54,

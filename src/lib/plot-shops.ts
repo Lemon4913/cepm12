@@ -22,6 +22,8 @@ export type PlotShop = {
   number: number;
   name: string;
   pendingSlug?: string;
+  /** Photos of this shop under public/shops/, for shops with no pending-store write-up. */
+  photoUrls?: string[];
 };
 
 export const plotShops: PlotShop[] = data;
@@ -38,7 +40,7 @@ export function getDirectoryStores(): Record<string, StoreInfo> {
           id: shop.plotId,
           name: shop.name,
           description: pending?.description ?? null,
-          photoUrls: pending?.photoUrls ?? [],
+          photoUrls: shop.photoUrls ?? pending?.photoUrls ?? [],
         },
       ];
     }),

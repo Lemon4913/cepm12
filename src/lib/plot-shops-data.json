@@ -40,7 +40,10 @@
   {
     "plotId": "rect182",
     "number": 8,
-    "name": "AYA Coffee shop"
+    "name": "AYA Coffee shop",
+    "photoUrls": [
+      "/shops/aya-coffee-1.jpg"
+    ]
   },
   {
     "plotId": "rect183",
