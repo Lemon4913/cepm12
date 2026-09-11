@@ -10,8 +10,12 @@ export type Checkpoint = {
    * landmarks rather than just a pillar or corner.
    */
   aboutTh?: string;
-  /** Optional photo of the spot, a path under public/ (e.g. /checkpoints/cp-07.jpg). */
-  imageUrl?: string;
+  /**
+   * Optional photos of the spot, paths under public/checkpoints/. One photo
+   * renders full-width; several render as a swipeable strip. Keep them
+   * web-sized (≤1280px, ~200 KB) — visitors load these on the market's mobile signal.
+   */
+  imageUrls?: string[];
   /** The 6-digit code printed/encoded in this checkpoint's physical sign. */
   qrValue: string;
   /**
@@ -94,7 +98,7 @@ export const checkpoints: Checkpoint[] = [
     aboutTh:
       "การเดินทางมาตลาดท่านาจากตัวเมืองนครปฐม สามารถเดินทางด้วยรถสองแถวใหญ่สีเหลืองสายนครปฐม–ท่านา " +
       "โดยรถจะวิ่งผ่านถนนเพชรเกษมและตลาดท่านาโดยตรง",
-    imageUrl: "/checkpoints/cp-05.jpg",
+    imageUrls: ["/checkpoints/cp-05.jpg"],
     qrValue: "894027",
     mapX: 102.83,
     mapY: 105.97,
@@ -105,6 +109,16 @@ export const checkpoints: Checkpoint[] = [
     nameTh: "ข้างร้านพรเจริญ",
     nameEn: "Phon Charoen Shop",
     descriptionTh: "จุดเช็คอินข้างร้านพรเจริญ ร้านค้าดั้งเดิมของตลาดท่านา",
+    aboutTh:
+      "อาคารบ้านเรือนภายในตลาดท่านามีเอกลักษณ์เป็นห้องแถวไม้โบราณ 2 ชั้น และสถาปัตยกรรมกึ่งพาณิชย์ " +
+      "สะท้อนถึงกลิ่นอายชุมชนไทยเชื้อสายจีนริมน้ำกว่า 100 ปี",
+    imageUrls: [
+      "/checkpoints/cp-06-1.jpg",
+      "/checkpoints/cp-06-2.jpg",
+      "/checkpoints/cp-06-3.jpg",
+      "/checkpoints/cp-06-4.jpg",
+      "/checkpoints/cp-06-5.jpg",
+    ],
     qrValue: "350962",
     mapX: 125.68,
     mapY: 99.79,
@@ -119,7 +133,7 @@ export const checkpoints: Checkpoint[] = [
       "ศาลเจ้าแม่เบิกไพร ตลาดท่านา อ.นครชัยศรี จ.นครปฐม เป็นศาลของเจ้าแม่หม่าโจ้ว (เทียงโหวเซี้ยบ้อ) " +
       "โดยชาวบ้านในชุมชนตลาดท่านาได้ร่วมใจกันอัญเชิญเทวรูปหรือผงธูปมาจากศาลเจ้าแม่เบิกไพร อ.บ้านโป่ง จ.ราชบุรี " +
       "มาประดิษฐานไว้ที่ริมน้ำนครชัยศรี โดยมีความเชื่อว่าเจ้าแม่จะช่วยคุ้มครองการเดินทางทางน้ำและการค้าขาย",
-    imageUrl: "/checkpoints/cp-07.webp",
+    imageUrls: ["/checkpoints/cp-07.webp"],
     qrValue: "671845",
     mapX: 70.39,
     mapY: 125.21,
