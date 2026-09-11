@@ -5,6 +5,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { LocateFixed, LocateOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { CheckpointDetail } from "@/components/map/market-map";
 import { checkpoints } from "@/lib/checkpoints";
 import { useCheckpointProgress } from "@/hooks/use-checkpoint-progress";
 import { MARKET_GEO, REAL_MAP_LAYER_OFFSETS, CHECKPOINT_LAYER, georeference, parseViewBox } from "@/lib/map-geo";
@@ -32,7 +34,9 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const locateRef = useRef<{ watchId: number; dot: L.CircleMarker; ring: L.Circle } | null>(null);
   const [locating, setLocating] = useState(false);
+  const [selectedCheckpointId, setSelectedCheckpointId] = useState<string | null>(null);
   const { isScanned } = useCheckpointProgress();
+  const selectedCheckpoint = selectedCheckpointId ? checkpoints.find((c) => c.id === selectedCheckpointId) : undefined;
 
   // Build the map once. Everything that depends on changing state (scanned
   // pins, geolocation) is layered on in separate effects below.
@@ -92,7 +96,10 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
         title: cp.nameTh,
         keyboard: true,
       }).addTo(map);
-      marker.bindPopup(() => popupContent(cp, isScanned(cp.id)), { closeButton: false, offset: [0, -6] });
+      // Tapping a pin opens the same bottom sheet as the floor-plan tab
+      // (rather than a Leaflet popup) so checkpoint info reads identically
+      // in both views.
+      marker.on("click", () => setSelectedCheckpointId(cp.id));
       markers.set(cp.id, marker);
     }
 
@@ -161,7 +168,9 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
   }
 
   return (
-    <div className="relative h-[calc(100dvh-13rem)] w-full overflow-hidden rounded-lg border bg-muted md:h-[calc(100dvh-11.5rem)]">
+    // `isolate` keeps Leaflet's own z-indexes (panes 400, controls 1000)
+    // inside this box so the bottom sheet (z-50, fixed) can still cover it.
+    <div className="relative isolate z-0 h-[calc(100dvh-13rem)] w-full overflow-hidden rounded-lg border bg-muted md:h-[calc(100dvh-11.5rem)]">
       <div ref={containerRef} className="real-world-map h-full w-full" />
       <Button
         type="button"
@@ -176,6 +185,12 @@ export function RealWorldMap({ svgMarkup }: { svgMarkup: string }) {
       <p className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 text-center text-xs whitespace-nowrap text-muted-foreground shadow">
         แผนผังตลาดซ้อนบนแผนที่จริง · แตะหมุดเพื่อดูจุดเช็คอิน
       </p>
+
+      <Sheet open={selectedCheckpointId !== null} onOpenChange={(open) => !open && setSelectedCheckpointId(null)}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto">
+          {selectedCheckpoint && <CheckpointDetail checkpoint={selectedCheckpoint} scanned={isScanned(selectedCheckpoint.id)} />}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
@@ -192,19 +207,3 @@ function pinIcon(order: number, scanned: boolean) {
   });
 }
 
-/** Built with DOM APIs rather than an HTML string so checkpoint text is never interpreted as markup. */
-function popupContent(cp: (typeof checkpoints)[number], scanned: boolean) {
-  const root = document.createElement("div");
-  root.className = "flex flex-col gap-1 text-sm";
-  const title = document.createElement("p");
-  title.className = "font-semibold";
-  title.textContent = `${cp.order}. ${cp.nameTh}`;
-  const sub = document.createElement("p");
-  sub.className = "text-xs text-muted-foreground";
-  sub.textContent = cp.nameEn;
-  const status = document.createElement("p");
-  status.className = scanned ? "text-xs font-medium text-primary" : "text-xs text-muted-foreground";
-  status.textContent = scanned ? "สแกนแล้ว" : "ยังไม่สแกน";
-  root.append(title, sub, status);
-  return root;
-}

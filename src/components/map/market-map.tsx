@@ -424,7 +424,8 @@ export function MarketMap({
   );
 }
 
-function CheckpointDetail({ checkpoint, scanned }: { checkpoint: (typeof checkpoints)[number]; scanned: boolean }) {
+/** Shared with the real-world map (real-world-map.tsx) so a pin opens the same sheet on both tabs. */
+export function CheckpointDetail({ checkpoint, scanned }: { checkpoint: (typeof checkpoints)[number]; scanned: boolean }) {
   return (
     <>
       <SheetHeader>
