@@ -4,6 +4,14 @@ export type Checkpoint = {
   nameTh: string;
   nameEn: string;
   descriptionTh: string;
+  /**
+   * Optional longer write-up (history, local beliefs) shown under the short
+   * description in the checkpoint sheet — for checkpoints that are actual
+   * landmarks rather than just a pillar or corner.
+   */
+  aboutTh?: string;
+  /** Optional photo of the spot, a path under public/ (e.g. /checkpoints/cp-07.jpg). */
+  imageUrl?: string;
   /** The 6-digit code printed/encoded in this checkpoint's physical sign. */
   qrValue: string;
   /**
@@ -83,6 +91,10 @@ export const checkpoints: Checkpoint[] = [
     nameTh: "ซอยภาพจิตรกรรมฝาผนัง (รถสองแถว)",
     nameEn: "Songthaew Mural Alley",
     descriptionTh: "ภาพจิตรกรรมฝาผนังรูปรถสองแถว สัญลักษณ์การเดินทางของชุมชน",
+    aboutTh:
+      "การเดินทางมาตลาดท่านาจากตัวเมืองนครปฐม สามารถเดินทางด้วยรถสองแถวใหญ่สีเหลืองสายนครปฐม–ท่านา " +
+      "โดยรถจะวิ่งผ่านถนนเพชรเกษมและตลาดท่านาโดยตรง",
+    imageUrl: "/checkpoints/cp-05.jpg",
     qrValue: "894027",
     mapX: 102.83,
     mapY: 105.97,
@@ -103,6 +115,11 @@ export const checkpoints: Checkpoint[] = [
     nameTh: "ลานจอดรถศาลเจ้าแม่เบิกไพร",
     nameEn: "Chao Mae Boek Phrai Shrine Parking",
     descriptionTh: "ลานจอดรถศาลเจ้าแม่เบิกไพร จุดสิ้นสุดเส้นทางเดินชมตลาด",
+    aboutTh:
+      "ศาลเจ้าแม่เบิกไพร ตลาดท่านา อ.นครชัยศรี จ.นครปฐม เป็นศาลของเจ้าแม่หม่าโจ้ว (เทียงโหวเซี้ยบ้อ) " +
+      "โดยชาวบ้านในชุมชนตลาดท่านาได้ร่วมใจกันอัญเชิญเทวรูปหรือผงธูปมาจากศาลเจ้าแม่เบิกไพร อ.บ้านโป่ง จ.ราชบุรี " +
+      "มาประดิษฐานไว้ที่ริมน้ำนครชัยศรี โดยมีความเชื่อว่าเจ้าแม่จะช่วยคุ้มครองการเดินทางทางน้ำและการค้าขาย",
+    imageUrl: "/checkpoints/cp-07.webp",
     qrValue: "671845",
     mapX: 70.39,
     mapY: 125.21,

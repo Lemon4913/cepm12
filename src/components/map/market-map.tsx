@@ -438,7 +438,16 @@ export function CheckpointDetail({ checkpoint, scanned }: { checkpoint: (typeof 
         <SheetDescription>{checkpoint.nameEn}</SheetDescription>
       </SheetHeader>
       <div className="flex flex-col gap-3 px-4 pb-4">
+        {checkpoint.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={checkpoint.imageUrl}
+            alt={checkpoint.nameTh}
+            className="aspect-video w-full rounded-lg border object-cover"
+          />
+        )}
         <p className="text-sm leading-relaxed text-muted-foreground">{checkpoint.descriptionTh}</p>
+        {checkpoint.aboutTh && <p className="text-sm leading-relaxed">{checkpoint.aboutTh}</p>}
         {scanned ? (
           <p className="flex items-center gap-1.5 text-sm font-medium text-primary">
             <CheckCircle2 className="size-4" />
